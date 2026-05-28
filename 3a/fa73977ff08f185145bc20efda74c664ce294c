@@ -1,0 +1,899 @@
+src/app/actions/team.ts
+  s_36ca595fc546f8::t_491ec13dd6c3af 93-107
+  s_36ca595fc546f8::t_870556c1a0e2fb 72-89,91-92,108-127
+  s_76640cabf33145::t_8912dafdff6084 17
+  s_03c36f67facd70::t_02a0b9ef61ad8f 5
+  s_3a26f9120816c7::t_d1becd6030b259 47-48,50-51
+  s_76640cabf33145::t_b57ca0f8538665 9,14,16,18-19,27,45,49,56,67
+  s_f7f7b8a8c14b8d::t_17b3621c889482 3,7-8,52,54,62
+  s_03c36f67facd70::t_f9f6edd95fdb0e 90
+  s_f7f7b8a8c14b8d::t_d9a3750435f2ea 21-23,29-31
+  s_f7f7b8a8c14b8d::t_c38390a0e51eb0 57
+  s_3a26f9120816c7::t_b5e36451642a9f 39
+src/components/retro/phase-transition-overlay.tsx
+  s_76640cabf33145::t_0c860f6923c8ec 62-65
+  s_7daeda11f81aee::t_50d2f6c8a3f6be 3
+  s_2db50afb440bf9::t_c7486517e7e320 21
+  s_7daeda11f81aee::t_d320f498b1c90f 61,66,68,70
+  s_7daeda11f81aee::t_d37131b88744ab 1-2,5-20,22-60,67,69,71-123
+  s_76640cabf33145::t_848c158b91f940 4
+supabase/migrations/033_action_items_fields.sql
+  s_76640cabf33145::t_7badfec22f5eac 1-19
+supabase/migrations/046_cleanup_retro_participants_on_leave.sql
+  s_4908ecbe638d3d::t_0ffab0e02bebeb 1-22
+src/app/login/actions.ts
+  s_5edc2eed7257ad::t_6f69366bc7354f 140,142
+  s_3a26f9120816c7::t_b2912961123a0b 64,136,144-147
+  s_7dc4ecddb28f0d::t_30d1e23e5c762d 118,123-124,127
+  s_5edc2eed7257ad::t_e1ad03291f3cab 7-9,11,13,16,25-26,28,30-32,51-53,55,57-59,80-82,84,86-88
+  s_76640cabf33145::t_1901329d9933b5 75,89-91,99-101,105-106,112-114,128,131,134-135
+  s_5edc2eed7257ad::t_40f301400c7b8a 119,121-122
+src/app/page.tsx
+  s_ce176d7af0120d::t_9578b32ce39fd0 353-354
+  s_ce176d7af0120d::t_354938d9167f6a 355-356
+  s_2db50afb440bf9::t_283b3df8cd09b5 1-352,357-364
+src/app/retro/[id]/lobby/page.tsx
+  s_8201c4fc283019::t_b32dacd5b58ab9 192
+  s_f7f7b8a8c14b8d::t_acc0f179bc89a8 190
+  s_f7f7b8a8c14b8d::t_d0d70f5dbcf878 33
+  s_76640cabf33145::t_733150a8f1d23d 36,93
+  s_5edc2eed7257ad::t_3886b7644b6b44 104-105
+  s_8132afe6b76e78::t_f8295debe910b0 134
+  s_76640cabf33145::t_84a113f0287805 145-178
+  s_f7f7b8a8c14b8d::t_66a888efe16eb9 108
+  s_a7eddf84718f6c::t_b447c8ea8313ed 26-30,38-39,45-70,79-81
+  s_f7f7b8a8c14b8d::t_263b3e483f1228 5,9,13,15,18-25,37,42,82,85-87
+  s_a7eddf84718f6c::t_ee163f01b51fd9 128-133,135-138
+  s_76640cabf33145::t_9df455c8a3b74e 7,14,16
+  s_5edc2eed7257ad::t_39de19e5774a35 71-78
+  s_5edc2eed7257ad::t_8aae38f640a0d5 201
+  s_3a26f9120816c7::t_41aa4b4463f18d 142,182
+  s_a7eddf84718f6c::t_d423890cb743d0 17
+src/lib/supabase/server.ts
+  s_f7f7b8a8c14b8d::t_a45847ae06d118 21-22,28-29
+src/components/dashboard/create-retro-dialog.tsx
+  s_f7f7b8a8c14b8d::t_22e275ab5b2213 4
+  s_f7f7b8a8c14b8d::t_24a3b498f0f37b 53
+eslint.config.mjs
+  s_f7f7b8a8c14b8d::t_019dc1648183c7 14-19
+src/components/dashboard/create-team-dialog.tsx
+  s_f7f7b8a8c14b8d::t_556c7c672f38dd 34
+src/app/globals.css
+  s_7daeda11f81aee::t_8be50fdab9a379 108-110
+  s_2db50afb440bf9::t_9bded5aadccb8d 51
+  s_2db50afb440bf9::t_fed295a1f0f4cf 68
+  s_2db50afb440bf9::t_f2398fbf241a11 83-84
+src/components/retro/phase-timer.tsx
+  s_3f8ebf9e0e5ae8::t_16fbc68a98842e 65-67,70
+  s_105c4bb77bc9bb::t_674c9148727828 22,54,109,111,113-115
+  s_3f8ebf9e0e5ae8::t_85ba838f439f16 4,6-10,15-17,20,23-25,68-69,71-104,106-108,110,112,118-119,121-122,124-129,131,133-137,141-163,165-166
+  s_85f4b728bd2d79::t_747b05b8a4e3fd 55,58-62,64
+  s_76640cabf33145::t_33dfe6e6c079d4 2-3,5,11-14,18-19,21,28-29,31-35,39-45,47-53,116-117,167-168
+  s_3f8ebf9e0e5ae8::t_819f5f0c68f57a 132,139-140
+  s_3f8ebf9e0e5ae8::t_c5826e8ba0de60 164
+  s_85f4b728bd2d79::t_e5f85ba8854cbe 26,36-38
+src/lib/supabase/client.ts
+  s_f7f7b8a8c14b8d::t_67ddec3b85ba09 5-6,8-14
+src/test/sanitize-next.test.ts
+  s_5edc2eed7257ad::t_bf0f0723745d26 3-4,9
+src/app/global-error.tsx
+  s_8201c4fc283019::t_c0618773111410 1-38
+src/app/login/layout.tsx
+  s_8201c4fc283019::t_ec6ca8d98ea181 1-10
+src/components/retro/retro-initializer.tsx
+  s_a7eddf84718f6c::t_fb0c60ca73b92e 43,54-70
+  s_f7f7b8a8c14b8d::t_9e57bb09518693 101
+  s_a7eddf84718f6c::t_abacf279c837e4 7
+  s_3a26f9120816c7::t_7de2bc985bd4a7 77-80
+  s_6c04c81033ddcd::t_a27e5efdd8bd63 96-97
+  s_3a26f9120816c7::t_4b35eb29baafec 24,34,44
+  s_f7f7b8a8c14b8d::t_533eadc2fded8d 3
+  s_f7f7b8a8c14b8d::t_a25de077188416 47,71-72,76
+  s_76640cabf33145::t_735706e05ce198 81
+  s_253db141621bf7::t_6b3b31bcc1a330 75
+supabase/migrations/043_avatars_bucket.sql
+  s_cbf29e28c4a6c6::t_5287aac1ba6cce 1-31
+src/components/dashboard/start-retro-wizard.tsx
+  s_76640cabf33145::t_6e41a04ae904f7 287,313-336,338,340-343
+  s_76640cabf33145::t_8b093187aac5fb 367,370-419
+  s_76640cabf33145::t_1796e7f69f7f7e 46
+  s_76640cabf33145::t_f32c8c56cd32cb 87-89
+  s_76640cabf33145::t_7e66a796bc5c7d 435
+  s_76640cabf33145::t_b6a1d174cddc9c 47
+  s_76640cabf33145::t_23f8e563fd6f23 134-136
+  s_3a26f9120816c7::t_66fab021655da4 143-146
+  s_76640cabf33145::t_47e7ca0845da41 63-65
+  s_76640cabf33145::t_c1db52b9969c7d 3,5
+  s_76640cabf33145::t_1f6fb7262579c9 201,211
+  s_3a26f9120816c7::t_8bc5a4d47e2864 1-2,4,6-45,48-62,66,77-86,90-133,137-142,147-152,154-165,167-169,173-200,202-210,212-286,288-312,344-366,368-369,420-434,436-444
+  s_76640cabf33145::t_aed0fb81416e12 153,166,170-172
+  s_8132afe6b76e78::t_1f718c91ae2782 337,339
+  s_76640cabf33145::t_5ab946c1f60b15 67-76
+src/app/(dashboard)/settings/_components/profile-form.tsx
+  s_cbf29e28c4a6c6::t_563e9d41b3cb1c 1-2,4-11,13-23,25-28,49,51-67,69-83,119,130-131
+  s_cbf29e28c4a6c6::t_5e523d36aaf320 3,12,24,29-48,50,68,84-118,120-129
+src/app/privacy/layout.tsx
+  s_ce176d7af0120d::t_46847445e46e20 1-10
+.claude/PROJECT_REVIEW_2026-05-24.md
+  s_76640cabf33145::t_d7c22c9bb62aae 1-269
+PROD_READINESS_FINAL.md
+  s_5edc2eed7257ad::t_e9be1ae7ef9f60 1-21,23-31,33-37,48-66,68-78,80-93,95-112,114-132
+src/components/retro/phases/write-phase.tsx
+  s_f7f7b8a8c14b8d::t_357dcadc420d65 5,13,29,32,40,195,286-288,308
+  s_76640cabf33145::t_f55d3283fb17b9 9,16,21,27-28,56,59,62,67,108-112,114-118,121-122,124,127,165-167,175-176,192,202,213-235,237-254,256-262,304,318-332
+  s_5edc2eed7257ad::t_7ba42caed74a50 14
+  s_76640cabf33145::t_fb51c58b1bb8a3 64,76
+  s_3f8ebf9e0e5ae8::t_9f8be331350667 168-174
+  s_76640cabf33145::t_912b1e8271a7e3 54
+  s_76640cabf33145::t_3ac1b52dc8acbb 70
+  s_85f4b728bd2d79::t_7bd0b04edc1962 182
+  s_76640cabf33145::t_234790aa5744c8 55
+  s_85f4b728bd2d79::t_797fb1492c54fa 152-159
+  s_85f4b728bd2d79::t_39bd0c28b9ab4f 30
+  s_76640cabf33145::t_925e454408c45f 15,17,19
+  s_3a26f9120816c7::t_167f780f416e13 45-49
+  s_76640cabf33145::t_8912dafdff6084 60,113
+  s_8201c4fc283019::t_7499949a993ead 35-39
+  s_76640cabf33145::t_e566714a84d38a 61,63,65,69,71,73-74,77-80,89,92,101
+  s_a7eddf84718f6c::t_e3699256784dc1 72
+  s_5edc2eed7257ad::t_7bda6132776476 81-85,93-98,100,106
+  s_5edc2eed7257ad::t_0fb14719922967 88,90-91,99,102,123,125-126,138-140
+  s_5edc2eed7257ad::t_9ee31eb09b979d 103-105,107,119-120,129-133,143-147
+  s_5edc2eed7257ad::t_4549f0bc41b7ee 255
+branding/retronot-logo.svg
+  s_2db50afb440bf9::t_9eb5e394a2de04 1-31
+src/app/(dashboard)/teams/[id]/_components/leave-team-button.tsx
+  s_03c36f67facd70::t_ef883c2f78a38b 22,30,33
+  s_4908ecbe638d3d::t_ee0e5634dbb954 31-32
+  s_36ca595fc546f8::t_c8bb443cd88bb8 1-3,5-21,23-29,34-72
+  s_03c36f67facd70::t_e299639591308f 4
+src/app/(dashboard)/teams/[id]/page.tsx
+  s_5edc2eed7257ad::t_5148dcaaa55b39 78,82,84,91
+  s_36ca595fc546f8::t_8bbac3c031b3db 89,95,117-118,127-131
+  s_e19d41c387cf84::t_e959fb81c00aa7 241
+  s_a7eddf84718f6c::t_d7018d42d8600d 170-185
+  s_36ca595fc546f8::t_3dcf995278830e 12
+  s_36ca595fc546f8::t_57ea1031e538ce 379,421,428
+  s_e19d41c387cf84::t_f86efd0c894e7a 377,380-420,422-427,429-434
+  s_e19d41c387cf84::t_cc5653cea9f60e 7,17-72,81,83,85-88,90,92-94,96-116,119-125,193,295-350,378,436-440
+src/app/apple-icon.svg
+  s_2db50afb440bf9::t_9d3ef9e942730f 1-8
+src/test/schemas.test.ts
+  s_f30064b293d347::t_ca213caf8ac017 7,13,25
+src/types/supabase.ts
+  s_5edc2eed7257ad::t_aa99a5b487a032 335,339,343
+  s_76640cabf33145::t_480489bdee1df7 303-304,312,320
+src/app/icon.svg
+  s_2db50afb440bf9::t_fb09006318a477 1-7
+src/app/retro/[id]/summary/page.tsx
+  s_8201c4fc283019::t_4952a8935a4dc6 111-112,140-141
+  s_85f4b728bd2d79::t_e6f2e6df855010 161-164
+  s_5edc2eed7257ad::t_46b6eefe7ee8ae 86-90
+  s_85f4b728bd2d79::t_0a1b868e5f4fe8 7-8
+  s_85f4b728bd2d79::t_8fb0586162a33f 15
+  s_8201c4fc283019::t_42de133101522c 9
+  s_5edc2eed7257ad::t_819a70456dfe32 123-124
+  s_85f4b728bd2d79::t_dcb6fac95dd07b 229
+supabase/migrations/030_fix_retros_realtime.sql
+  s_3a26f9120816c7::t_a7e78d53fee20b 1-15
+src/app/retro/[id]/layout.tsx
+  s_3a26f9120816c7::t_dd3b2122b47248 74
+  s_5edc2eed7257ad::t_a27d6fe43587e1 25-30,40-45
+  s_52b528673f070a::t_78d99f07b4f057 49,51-58,69
+  s_3a26f9120816c7::t_d64e840978c92d 17-18,20,46-48,50,59-60
+  s_8201c4fc283019::t_e5167f5e8e90d6 78
+branding/retronot-wordmark.svg
+  s_2db50afb440bf9::t_337e8e19f519f0 1-24
+src/app/api/ai/route.ts
+  s_5edc2eed7257ad::t_8da817658844f9 3,9-11
+  s_a7eddf84718f6c::t_9a5b73093c48d1 46,49-50,52,54-57,59-61,63-64,67,71-73,76-78,81-84,86,88-89,95-96,100-102,104,106-107,110,115,125,127,129
+  s_a7eddf84718f6c::t_57917f2bc2a275 4,12-13,17-19,22-24,27-28,31-34,36-37,40-41,44-45,68,105,111-114,116-124,128,137,140,142,144-147,149-153,155,157-159,161,164,182-183,186-187,197,208-209,211-212,215,225-226,228,242-243
+  s_8201c4fc283019::t_d5c846a384e666 229,238
+  s_5edc2eed7257ad::t_b617f725acc649 167-179,189-194,198-206,217-223,231-237
+  s_a7eddf84718f6c::t_3aa64a5801b5f6 5
+src/app/actions/retro.ts
+  s_85f4b728bd2d79::t_5139a272e06d2d 155
+  s_5edc2eed7257ad::t_38c66307e6d671 275-276
+  s_85f4b728bd2d79::t_6c190644368408 294,301
+  s_85f4b728bd2d79::t_8d71a0377126dd 117-119
+  s_5edc2eed7257ad::t_5885d1f8e9063a 165,167,172,180-181,183,188-189,191,194,196,201,208-210,212-215,217,220
+  s_253db141621bf7::t_c9b4224d9a5b29 310-312,314,316,320,327
+  s_a7eddf84718f6c::t_79b6d61721fe49 321
+  s_5edc2eed7257ad::t_6232ecd3f5430a 355
+  s_5edc2eed7257ad::t_ee2808369198da 8
+  s_76640cabf33145::t_b2f2a6ad1ca46c 39,45-46,51,53,63
+  s_5edc2eed7257ad::t_8303f06aebbb06 388-389
+  s_76640cabf33145::t_b0a7a50fea3fd8 99
+  s_f7f7b8a8c14b8d::t_c17ad2b425d801 66
+  s_3f8ebf9e0e5ae8::t_e6c8ac0669f4a5 223-224,226
+  s_76640cabf33145::t_5f056bbc997966 116,122
+  s_3f8ebf9e0e5ae8::t_b5be1b86195e1c 228,232-233,238,240,243,248,257-262,264-265,267,269,272-273
+  s_f30064b293d347::t_ca213caf8ac017 57
+  s_76640cabf33145::t_c4ffdd45ac5bfb 30-35,56,58-62,74,109,128-131,133,138,142-143,148,150,153,156,158,160,163-164,169,173-174,179,182,185,187,192-193,198,202-203,211,216,221-222,274,278,282-283,288,290,293,302,304,306
+  s_5edc2eed7257ad::t_0e60b14c321210 134-136
+  s_5edc2eed7257ad::t_4a4e97698f5d87 322
+  s_85f4b728bd2d79::t_9a10b258a64a00 250-251
+  s_5edc2eed7257ad::t_d89bb6cb698537 362-377
+  s_f7f7b8a8c14b8d::t_d128ef7ddeb936 11-12
+  s_a7eddf84718f6c::t_84af0213f55946 328-329,331,335-336,341,344-345,347,349,352-354,357,361,378,380,382,385-387,391,395-396,405-409
+  s_5edc2eed7257ad::t_6bfadbac0a666a 92
+src/components/dashboard/team-health-charts.tsx
+  s_8132afe6b76e78::t_a8139f9f568a5b 108-109,111
+  s_8132afe6b76e78::t_7378165e4fe027 146-147,149
+  s_8132afe6b76e78::t_bc427b730790b1 126-127,129-131
+  s_5edc2eed7257ad::t_fa5b484e34d9f8 3,13-17
+  s_8132afe6b76e78::t_74af60cdc0611a 45-47,49-51
+  s_8132afe6b76e78::t_c8ee03dbcf0c6d 48
+  s_a7eddf84718f6c::t_99d10012d4f69f 1-2,4-12,18-44,52-107,110,112-125,128,132-145,148,150-156
+supabase/migrations/035_write_phase_rls_anonymity.sql
+  s_76640cabf33145::t_30371d47778062 1-17
+vitest.config.ts
+  s_f7f7b8a8c14b8d::t_0d1e41f5314069 2-19
+src/components/retro/phases/group-phase.tsx
+  s_a7eddf84718f6c::t_640df2736711d6 374-381,383-394,396-401,403,408,427,437-440,442
+  s_85f4b728bd2d79::t_538ec8f6cd83e3 191-192,195
+  s_f7f7b8a8c14b8d::t_1b93c60f0ab305 9,15,44,50,73,125,137,140,154,203,231,238,368,452-455,461
+  s_a7eddf84718f6c::t_6c97f3838b4b15 17,19
+  s_a7df238a19b7a3::t_024ce377ebc921 13
+  s_f7f7b8a8c14b8d::t_6a042117cfc970 346-347
+  s_a7eddf84718f6c::t_b19cff325b71f2 18
+  s_a7eddf84718f6c::t_ee82f0affbe934 156-158
+  s_a7eddf84718f6c::t_f8165506a9ee06 351,353-364,366,371-372,382,395,441,443-444
+  s_85f4b728bd2d79::t_7c982ece12d52a 367
+  s_76640cabf33145::t_3e8328f8755f10 16
+  s_a7df238a19b7a3::t_d74754b426afad 155,160-161,167,181,183
+  s_85f4b728bd2d79::t_2e236da33a0b8a 153
+  s_85f4b728bd2d79::t_de354307fd5003 324-331
+  s_76640cabf33145::t_e45d6245fa1f66 5,7,21-31,34,36-37,39,42-43,48-49,55,61-68,71-72,74-88,98-121,132,135-136,147,206-208,220,225-226,228,234-235,248-250,336,338-339,343,349
+  s_8201c4fc283019::t_7499949a993ead 162-166
+  s_f7f7b8a8c14b8d::t_b81e00d531560f 212
+  s_a7eddf84718f6c::t_b2da324846ea19 253-259,265,273,282,301-320
+  s_a7eddf84718f6c::t_35ebfc9425a3ad 373
+  s_a7eddf84718f6c::t_415854e66d3204 402,404-407,409-426,428-436
+  s_5edc2eed7257ad::t_08b275a3d66b6c 194
+  s_a7eddf84718f6c::t_f85462d307f658 159,168-180
+  s_85f4b728bd2d79::t_84389be069d0a9 182
+  s_76640cabf33145::t_a58b72c021036a 185-189
+  s_a7eddf84718f6c::t_cc0d1d6d372048 261-264,266-272,275-281,283-298,300
+supabase/migrations/040_custom_templates.sql
+  s_76640cabf33145::t_288b9854c8037a 1-27
+supabase/migrations/051_prod_fixes.sql
+  s_85f4b728bd2d79::t_9b16d4969b1b03 1-146
+src/app/(dashboard)/loading.tsx
+  s_8201c4fc283019::t_032703e4e65488 1-9
+supabase/migrations/039_add_moderator_id.sql
+  s_76640cabf33145::t_cf956a31e1c92b 1-5
+src/app/kvkk/layout.tsx
+  s_ce176d7af0120d::t_7314f08fdd5c9d 1-10
+src/app/(dashboard)/templates/page.tsx
+  s_5edc2eed7257ad::t_fb10c0e94139de 21
+  s_5edc2eed7257ad::t_7ae991ce68d27e 1
+src/app/retro/[id]/loading.tsx
+  s_8201c4fc283019::t_3399cc81da146f 1-12
+src/app/retro/[id]/board/page.tsx
+  s_76640cabf33145::t_5b05bff82f3c2a 36
+  s_7daeda11f81aee::t_ce4fc11f0aabac 3,9,13-14,27-35,37-39,44-67
+  s_7daeda11f81aee::t_3e2565875d7476 11,15-23,43,68
+branding/retronot-icon.svg
+  s_2db50afb440bf9::t_ee43b8e4a6ab4d 1-10
+src/lib/schemas.ts
+  s_76640cabf33145::t_7c994922320faa 2-3,5-11,14,21-22,25-28,30-31,34-35,38-40
+  s_f30064b293d347::t_ca213caf8ac017 4
+  s_5edc2eed7257ad::t_bbf3183194348b 41,43
+  s_f7f7b8a8c14b8d::t_2146f4f7b4e684 16-17,20
+  s_5edc2eed7257ad::t_6ac8df01ecc601 44-50
+  s_76640cabf33145::t_ab34d122b1b632 12
+supabase/migrations/038_add_phase_started_at.sql
+  s_76640cabf33145::t_57e370759f6b4c 1-2
+playwright.config.ts
+  s_76640cabf33145::t_71eb3a11fccc45 1-27
+supabase/migrations/029_baseline.sql
+  s_f7f7b8a8c14b8d::t_c8a22f39b2395f 1-372
+src/app/cookie-policy/layout.tsx
+  s_ce176d7af0120d::t_97a8651b873500 1-10
+supabase/migrations/052_fix_action_items_participant_visibility.sql
+  s_85f4b728bd2d79::t_543b3a755caae8 1-14
+src/components/retro/phases/discuss-phase.tsx
+  s_7daeda11f81aee::t_4000a82d824f19 26
+  s_9f18314bfd0184::t_cfdcfa8b830724 242
+  s_a7eddf84718f6c::t_d35027abd043ed 13
+  s_a7eddf84718f6c::t_b30751750db9b6 283-284,288,290-299,312-314
+  s_7daeda11f81aee::t_c40b23d9d39dea 33
+  s_f7f7b8a8c14b8d::t_5a9327fb0637ad 31,43,90,99,111,136-139,148,186,198,200,263,354-357,432
+  s_7daeda11f81aee::t_2d82e11473400f 12
+  s_8201c4fc283019::t_7499949a993ead 85,87,89
+  s_85f4b728bd2d79::t_3096cecfb66970 105,107,113
+  s_5edc2eed7257ad::t_bc9cfa9aa0af23 353
+  s_a7eddf84718f6c::t_d4acb5e766bc3b 25
+  s_8282707462532d::t_286c425435b672 40
+  s_6ebb872fda2a16::t_1390fde113abb3 30
+  s_6ebb872fda2a16::t_05eaca56d2c86b 77-81
+  s_7daeda11f81aee::t_a1a67bc7b5bfc1 264,266,269-281,285-287,289,315-324,326-328
+  s_8282707462532d::t_620734597ad2ce 267
+  s_8282707462532d::t_8b7dfe42c51810 54
+  s_76640cabf33145::t_33dc4e779fa807 15-19,28-29,36,42,50,73,92,109-110,156-159,175-179,196,205-208,248,255,261,325,333,335-351,363-371,380-385,387,389-399,401,403-406,408-409,415,420,425
+  s_7daeda11f81aee::t_ac334825b3c381 146-147,149-155,160-161,164,167,170,181-182,184-185,187-188,191
+  s_6ebb872fda2a16::t_444464737a30de 265,268
+  s_a7eddf84718f6c::t_8e18a709b08e28 372-379
+  s_a7eddf84718f6c::t_75f0aa9ef59a4e 14
+  s_85f4b728bd2d79::t_625924b4a09042 104,106,112
+  s_85f4b728bd2d79::t_2b3ca20190ffa5 22
+  s_5edc2eed7257ad::t_d61552946fc630 386,388,400,402,407
+  s_8201c4fc283019::t_9f629d2e8ca523 165-166
+  s_85f4b728bd2d79::t_4351dddd3c0480 35,57-70
+  s_a7eddf84718f6c::t_3b250e54e117e1 162-163
+  s_a7eddf84718f6c::t_27a071f2975bb4 211-225
+src/components/layout/cookie-consent.tsx
+  s_ce176d7af0120d::t_49941b2512db55 1-96
+PROD_FIX_TODO.md
+  s_8201c4fc283019::t_22f1e3498de426 5-10,14-25,29-36,40-46,50-53
+  s_8201c4fc283019::t_ded918f258d74d 1-4,11-13,26-28,37-39,47-49
+src/hooks/use-retro-realtime.ts
+  s_253db141621bf7::t_ba114895313324 227,256-257,261,279,286-288,294,296
+  s_5edc2eed7257ad::t_9ee31eb09b979d 181,184-185,187-190,195
+  s_253db141621bf7::t_f85f94472cbe8a 267-270,274-275,280-282,285
+  s_8201c4fc283019::t_5b1ba07436bc0d 228-229,232-233,235,237,239-241,246,250-251,276
+  s_8201c4fc283019::t_cf3293d866ac16 310-311,313,323-324,327
+  s_85f4b728bd2d79::t_67f174754755b9 339-340,342-344,350-352,356,367-370,374,381-384,388,399
+  s_3a26f9120816c7::t_47627fb507ac98 175-176,180
+  s_8201c4fc283019::t_08792a60db7072 211,213,216
+  s_8201c4fc283019::t_a2b4393108a125 44-45
+  s_47972452e39564::t_f3eed9bf74aa94 245,247,249,255,263,277,283
+  s_ba3a715f36168a::t_7e66238188bd99 390,397
+  s_f7f7b8a8c14b8d::t_7a0ea8df9d81cf 21,40-41
+  s_3a26f9120816c7::t_2a2c4bacd68a4d 29
+  s_85f4b728bd2d79::t_974c96ccd68b95 400-402,406,417
+  s_5edc2eed7257ad::t_b203c9f29391c0 182-183,186,191-194
+  s_85f4b728bd2d79::t_8a5f20d447ed88 278
+  s_3a26f9120816c7::t_b44720e154a99c 210,319
+  s_253db141621bf7::t_9e217166ea49e1 19
+  s_85f4b728bd2d79::t_879f4e8e0d934d 200
+  s_47972452e39564::t_3bf713d9961d5b 225-226,230,234
+  s_8201c4fc283019::t_6968574b659da3 203-204,207
+  s_76640cabf33145::t_ee93ddecf0612f 14-15,18,105,209,223,304-306
+  s_3a26f9120816c7::t_6d72756aa937a7 99,103-104,108
+src/app/reset-password/page.tsx
+  s_7dc4ecddb28f0d::t_a258eb5b77c196 16-17,40-44,63,66,97,99-107,110-215
+  s_2db50afb440bf9::t_3ee17953648001 98,108-109
+  s_76640cabf33145::t_127076e08e0dbd 1-8,11-15,18-39,45-62,64-65,67-96,216-231
+  s_2db50afb440bf9::t_e1e8050da9d287 9-10
+src/app/(dashboard)/teams/page.tsx
+  s_36ca595fc546f8::t_9c77e9fb44673b 1
+  s_36ca595fc546f8::t_593f7436afd92c 5
+  s_8201c4fc283019::t_b24336cbfa62f2 2,9-13
+  s_f7f7b8a8c14b8d::t_be0a6ad860fa31 4,7,14-15,23,29-30,32,35,37-40,43-48,50,59,62-67
+  s_4908ecbe638d3d::t_275fea38848e50 22
+  s_36ca595fc546f8::t_88005df14a59d3 49,51-58,60-61
+src/test/schemas-full.test.ts
+  s_5edc2eed7257ad::t_f994bc191da0f2 2-8,13-16,24,27,36-37,64,68-70,76,85,94
+src/components/retro/previous-action-items.tsx
+  s_8132afe6b76e78::t_14b68f284f7495 89-124
+  s_8132afe6b76e78::t_dbe7c9e8537972 24
+  s_8132afe6b76e78::t_c32b36e0717e6e 19
+  s_8132afe6b76e78::t_408852564a2cae 71,73-74,82
+  s_a7eddf84718f6c::t_7b66c7946498de 1-18,20-23,25-70,72,75-81,83-88,125-152
+supabase/migrations/048_fix_action_items_select_rls.sql
+  s_245b8f67bf6895::t_9e439b6d8fce65 1-16
+src/app/auth/callback/route.ts
+  s_2db50afb440bf9::t_447c87bde7b006 7-8
+e2e/auth.spec.ts
+  s_76640cabf33145::t_348a6326c31777 1-59
+src/lib/env.ts
+  s_5edc2eed7257ad::t_fa06e609a5751a 19-20
+  s_8201c4fc283019::t_22056576739501 1-9,13-14,22-23,25-26,28-31,34-35,38,40-42,45-47
+src/app/(dashboard)/error.tsx
+  s_8201c4fc283019::t_b7e3444df0c36d 1-25
+src/app/opengraph-image.tsx
+  s_2db50afb440bf9::t_ea9e3a1d8bec3f 1-95
+src/app/actions/card.ts
+  s_5edc2eed7257ad::t_d89bb6cb698537 5,12,45,66
+  s_5edc2eed7257ad::t_19d258ea0e857f 1-4,6-11,13-44,46-65,67-82
+src/app/(dashboard)/teams/[id]/_components/action-item-checkbox.tsx
+  s_36ca595fc546f8::t_0dde27551f719c 1-50
+supabase/migrations/036_add_missing_indexes.sql
+  s_76640cabf33145::t_6328b635dc1c80 1-12
+src/app/cookie-policy/page.tsx
+  s_ce176d7af0120d::t_59b4eeebe192c7 1-292
+src/components/dashboard/start-retro-button.tsx
+  s_3a26f9120816c7::t_381f9b4f9adc65 1-34
+src/app/login/page.tsx
+  s_76640cabf33145::t_027662dce960c8 9
+  s_ce176d7af0120d::t_7e72f4afd857b3 12,21,107-121
+  s_3a26f9120816c7::t_f52132dacf0cb7 3-4,16-17,57,61-62,64-65,67-83,89-106,122-126,149-153,155-156,159-190,204,307,309-320
+  s_2db50afb440bf9::t_65894365fe6643 191,193-201,205-234,236-250,252-256,258-269,271-283,285,287-294,297,299-301
+  s_3a26f9120816c7::t_ab211064d0143b 31-32
+  s_2db50afb440bf9::t_1271c5af9b4869 10-11
+  s_76640cabf33145::t_dcfba72696b309 20,33-48
+  s_76640cabf33145::t_7eddb7c4df5b38 63,66
+  s_76640cabf33145::t_505181bf754956 84-88
+  s_2db50afb440bf9::t_b9acde1f09b105 192,202-203,302,304-306,308
+  s_76640cabf33145::t_5ee7cb38adca02 127-148
+  s_2db50afb440bf9::t_4da81526988263 18
+package.json
+  s_ce176d7af0120d::t_69a5775b8903d9 2-76
+supabase/migrations/042_claim_moderator_rpc.sql
+  s_253db141621bf7::t_b80f0dc9616a28 1-23
+src/app/retro/[id]/page.tsx
+  s_f7f7b8a8c14b8d::t_0cc329fc2bf3b1 8
+  s_8201c4fc283019::t_829cdaa7508ade 7
+  s_8201c4fc283019::t_c5a05392b978f2 15-20
+src/app/(dashboard)/templates/_components/template-builder.tsx
+  s_76640cabf33145::t_ef10055fd04e1f 9
+  s_76640cabf33145::t_0f8ab4b1da159c 1-3,5-8,10-31,33-68,70-141
+  s_cbf29e28c4a6c6::t_afdb1b39cc55f6 32
+  s_cbf29e28c4a6c6::t_9ab66a1d06b65a 4
+  s_cbf29e28c4a6c6::t_04d2a7bf8ccfc9 69
+src/test/setup.ts
+  s_f7f7b8a8c14b8d::t_cb757bc29e54ff 1
+tsconfig.json
+  s_76640cabf33145::t_1cd9b9d16e8fda 33
+supabase/migrations/031_retros_participant_select_policy.sql
+  s_7daeda11f81aee::t_2e801779f5331c 1-12
+src/lib/ai.ts
+  s_a7eddf84718f6c::t_bedb6907bf7699 1-34
+src/app/layout.tsx
+  s_2db50afb440bf9::t_3f53bb1cc28c5b 11-12
+  s_8201c4fc283019::t_72b355809f1585 24-29
+  s_76640cabf33145::t_b8a082cbdcf57d 5,21,23,30-32
+  s_f30064b293d347::t_b1e5b6a46a610e 10
+supabase/migrations/045_fix_leave_team_rls.sql
+  s_4908ecbe638d3d::t_1140c8494c4011 1-7
+src/app/invite/[token]/page.tsx
+  s_f7f7b8a8c14b8d::t_ed4c1634c47004 37
+  s_f7f7b8a8c14b8d::t_0844ebc62de58a 25
+  s_5edc2eed7257ad::t_8d9aca42302c9c 38
+  s_f7f7b8a8c14b8d::t_9fff5bc1c0f963 47
+  s_f7f7b8a8c14b8d::t_6018175eed3945 18-19,23
+  s_8201c4fc283019::t_d5c846a384e666 41
+  s_f7f7b8a8c14b8d::t_e2d36cb307f88b 62
+  s_2db50afb440bf9::t_9121580a66d46e 64
+src/app/(dashboard)/settings/page.tsx
+  s_cbf29e28c4a6c6::t_a6e5f796c96875 6,40-45
+  s_8201c4fc283019::t_b24336cbfa62f2 3,9-14
+  s_f7f7b8a8c14b8d::t_cfc07cd6611276 22-23
+  s_f7f7b8a8c14b8d::t_925f1413b747cc 4,7-8
+src/lib/store/retro-store.ts
+  s_f7f7b8a8c14b8d::t_ea3a35ab0e875a 71,84-85,94-95,97,110-111,113,133-134,136,146-147,149,159-160,162,192-193
+  s_3a26f9120816c7::t_997dea0b5f7f27 126-128,130-131
+  s_a7eddf84718f6c::t_f0d6ac9c855a97 12,15
+  s_ba3a715f36168a::t_4e382cdd1db83f 81,167-168,172-174,178
+  s_a7eddf84718f6c::t_3d86dd0cd1edf6 78
+  s_a7eddf84718f6c::t_47eeb2ab9ca175 89
+src/app/auth/auth-code-error/page.tsx
+  s_2db50afb440bf9::t_13866346106b0d 1-33
+branding/tokens.css
+  s_2db50afb440bf9::t_b783cfeb01d05f 1-62
+supabase/migrations/053_refresh_retro_cards_publication.sql
+  s_8201c4fc283019::t_53fe70dd01f996 1-5
+src/components/retro/participants-sidebar.tsx
+  s_f7f7b8a8c14b8d::t_59897c32749a14 117
+  s_76640cabf33145::t_877dd0150589c4 85-86,108-109,111,134-137,140-144
+  s_662441c888186e::t_6e8ad9b660d6d5 11,28
+  s_85f4b728bd2d79::t_63e91b4b8eaeca 54-55
+  s_5edc2eed7257ad::t_bc89d5d3bb636f 27,52-53,56-75,139,150-189
+  s_76640cabf33145::t_ebe3d809c432b6 26,31,38,44-50
+  s_f7f7b8a8c14b8d::t_25cce864172e5f 80
+  s_76640cabf33145::t_79dece8bc8699c 9-10,12,14
+  s_5edc2eed7257ad::t_715a17c87af6c6 41-42
+  s_f7f7b8a8c14b8d::t_aa481c40f5dfcd 8,17-22
+  s_85f4b728bd2d79::t_9907bd2b2b187c 15
+  s_ba3a715f36168a::t_081af74735f789 119-120,126
+  s_85f4b728bd2d79::t_7b95a4803b4241 29
+  s_5edc2eed7257ad::t_531fbc73dce9da 13
+src/app/(dashboard)/teams/_components/invite-copy-button.tsx
+  s_f7f7b8a8c14b8d::t_e5a208eb89ccfc 1-50
+e2e/retro-full-flow.spec.ts
+  s_76640cabf33145::t_8532c39d233447 1-94
+src/app/(dashboard)/templates/_components/delete-template-button.tsx
+  s_76640cabf33145::t_e3f146e2c20523 1-39
+supabase/migrations/044_action_items_team_members_rls.sql
+  s_36ca595fc546f8::t_e11f4995af2ab3 1-24
+supabase/migrations/047_cleanup_stale_retro_participants.sql
+  s_4908ecbe638d3d::t_bd3588030d55c4 1-12
+supabase/migrations/050_card_author_revealed.sql
+  s_a7eddf84718f6c::t_8e55df5295dfe7 1-12
+branding/retronot-icon-dark.svg
+  s_2db50afb440bf9::t_d710f9e62d6ac7 1-8
+src/test/crypto.test.ts
+  s_f7f7b8a8c14b8d::t_d418cd91434a70 1-22
+src/components/layout/sidebar.tsx
+  s_76640cabf33145::t_ccd2eb654d4b96 12
+  s_76640cabf33145::t_1746e5c9cf6f4b 40
+  s_f7f7b8a8c14b8d::t_97263ef24a6169 9,11,19,27,117,142
+  s_2db50afb440bf9::t_f751035a29cc9a 47
+  s_105c4bb77bc9bb::t_b3023ce11c1be1 28
+  s_cbf29e28c4a6c6::t_91ef314b99bef3 82
+  s_74e1815a6b321d::t_9e5a8e94c60a56 16,94
+  s_5edc2eed7257ad::t_8c05a26b9dadd4 30,44-46,48-56,66,103-116,118-141,143
+  s_76640cabf33145::t_f56e6ae3d1ae95 90-93,97
+  s_2db50afb440bf9::t_136a266c9b17f1 14
+  s_74e1815a6b321d::t_38b01e6f53440f 29
+  s_5edc2eed7257ad::t_98dc08b7efea2f 5
+  s_cbf29e28c4a6c6::t_321c3dd85d80e7 83,86
+  s_5edc2eed7257ad::t_5e98259668b8e1 13
+  s_2db50afb440bf9::t_c42c8ee147fb56 38
+  s_cbf29e28c4a6c6::t_a67ac8128fd5a0 20-21,24
+  s_8201c4fc283019::t_fcfb337c475bb8 95-96
+src/lib/constants.ts
+  s_76640cabf33145::t_1bdc65a7c6756e 10-24
+  s_f7f7b8a8c14b8d::t_908198336c60c9 1-3
+src/app/(dashboard)/settings/_components/avatar-picker-dialog.tsx
+  s_cbf29e28c4a6c6::t_33fc55ec009351 1-166
+sentry.server.config.ts
+  s_8201c4fc283019::t_d5c846a384e666 5,7-11,13-15,18,21,23
+  s_f7f7b8a8c14b8d::t_22c5109f4544a2 2-4,6
+supabase/migrations/037_add_group_update_policy.sql
+  s_76640cabf33145::t_6aff7a13b652b0 1-11
+supabase/migrations/049_action_item_carryover.sql
+  s_a7eddf84718f6c::t_f3b811d3c8407b 1-6
+src/app/not-found.tsx
+  s_5edc2eed7257ad::t_77e67f5e3762fb 19
+  s_2db50afb440bf9::t_aae03ee865d233 1-18,20-23
+supabase/migrations/041_fix_card_select_policy.sql
+  s_76640cabf33145::t_64bfa604420d54 1-15
+src/app/actions/user.ts
+  s_5edc2eed7257ad::t_8b791118da62ed 19,29
+  s_cbf29e28c4a6c6::t_921dd2cf60e7ca 20,22,24,26
+  s_f7f7b8a8c14b8d::t_528af1a2aaf720 18,32
+supabase/migrations/034_vote_limit_trigger.sql
+  s_76640cabf33145::t_91fe10603b95a7 1-29
+src/components/ui/checkbox.tsx
+  s_ce176d7af0120d::t_9fe4c1f686ec3f 1-29
+src/app/kvkk/page.tsx
+  s_ce176d7af0120d::t_95e3a79eef0d72 1-364
+supabase/migrations/032_add_archived_at.sql
+  s_76640cabf33145::t_5b21ab689f48d2 1-3
+src/app/(dashboard)/layout.tsx
+  s_5edc2eed7257ad::t_fad40bae1f3280 30
+  s_cbf29e28c4a6c6::t_e9b7d0bc156d8d 17-22,25-29
+src/app/(dashboard)/teams/[id]/retros/page.tsx
+  s_e19d41c387cf84::t_12777e939f3017 1-60,62-120
+  s_5edc2eed7257ad::t_e3cefb33fe3096 61
+src/app/retro/[id]/error.tsx
+  s_8201c4fc283019::t_ea99764b829557 1-31
+src/app/terms/layout.tsx
+  s_ce176d7af0120d::t_7985bc5b30c3f6 1-10
+src/app/actions/vote.ts
+  s_5edc2eed7257ad::t_0112e8a4d19e51 1-4,7,10-47,49-72
+  s_5edc2eed7257ad::t_d89bb6cb698537 5,8-9,48
+next.config.ts
+  s_f30064b293d347::t_b1e5b6a46a610e 2,6,49,55
+  s_f7f7b8a8c14b8d::t_6b8bf13f1d269e 44-48
+  s_cbf29e28c4a6c6::t_cdf23617e1474f 5,7
+  s_5edc2eed7257ad::t_6a1ed4965a2586 24-37
+  s_8201c4fc283019::t_d5c846a384e666 8-23,38-41
+  s_f7f7b8a8c14b8d::t_18db44bbce9a9d 50-54
+src/components/retro/phases/vote-phase.tsx
+  s_85f4b728bd2d79::t_810a55e92658b0 201
+  s_ba3a715f36168a::t_383b1e39a65939 64,69
+  s_5edc2eed7257ad::t_1f509c8f0e6985 11
+  s_6c04c81033ddcd::t_4450764d9647f6 209
+  s_76640cabf33145::t_49c4abdb01cfb3 33
+  s_3f8ebf9e0e5ae8::t_37897136c7caf5 179-185
+  s_ba3a715f36168a::t_1a472b04b79be6 19
+  s_76640cabf33145::t_b8315dd7979242 170-171,176-178,186-187
+  s_76640cabf33145::t_e1bb42788c0a5c 13-16
+  s_f7f7b8a8c14b8d::t_f678d0c49d302c 7,10,12,22,30,34-35,57,68,99,140,145,168,194,204,206,208,218,223,225,230,235
+  s_85f4b728bd2d79::t_1652b0d22a8e6e 21
+  s_85f4b728bd2d79::t_7d0e54c45a279d 107-114
+  s_8201c4fc283019::t_7499949a993ead 25,27,29
+  s_76640cabf33145::t_56529eab2fb6c6 65
+  s_5edc2eed7257ad::t_72b89de5428cf9 67,71-74,98,100
+  s_6c04c81033ddcd::t_3f8deac356256b 95-96,101
+  s_6c04c81033ddcd::t_724645b0f1ecde 63,66,70
+branding/retronot-logo-dark.svg
+  s_2db50afb440bf9::t_9b1bdc0ddf7fff 1-31
+src/app/privacy/page.tsx
+  s_ce176d7af0120d::t_ac6173bc685799 1-405,408-414
+  s_ce176d7af0120d::t_354938d9167f6a 406-407
+src/app/terms/page.tsx
+  s_ce176d7af0120d::t_fa36b067459370 1-311,314-320
+  s_ce176d7af0120d::t_354938d9167f6a 312-313
+PROD_FIX_CHECKLIST.md
+  s_085e5cccc618af::t_a1e7b1db6f01fd 1-108
+src/components/layout/logo.tsx
+  s_2db50afb440bf9::t_e0c36e2dee8c41 1-52
+src/instrumentation.ts
+  s_8201c4fc283019::t_90c5612b792e85 2-3,5
+sentry.client.config.ts
+  s_76640cabf33145::t_f26476b7ef93a0 10
+  s_8201c4fc283019::t_d5c846a384e666 5,8,12-17,19-21,24,27,29
+  s_f7f7b8a8c14b8d::t_a714317fa248d8 2-4,6-7,9,11
+README.md
+  s_f7f7b8a8c14b8d::t_ef731ca91124ca 1,3,5-97,103,105-111,113,115-125,127,129,131-133,135,137-139,141-143
+supabase/migrations/054_security_fixes.sql
+  s_5edc2eed7257ad::t_60d956e7bf7094 1-82
+src/app/(dashboard)/dashboard/page.tsx
+  s_5edc2eed7257ad::t_51831fef170139 54
+  s_5edc2eed7257ad::t_5ff1f27140e1e9 64-65
+  s_5edc2eed7257ad::t_9b61dabf9142bf 263
+  s_2db50afb440bf9::t_dac9f76558684a 1,4-17,24-53,55-63,66-262,264-299
+  s_5edc2eed7257ad::t_adf70e12c53089 3
+  s_8201c4fc283019::t_e55cfb7f1506b7 2
+  s_8201c4fc283019::t_986ac61c531841 18-23
+sentry.edge.config.ts
+  s_f7f7b8a8c14b8d::t_374e56ecf4f573 2-4,6
+  s_8201c4fc283019::t_d5c846a384e666 5
+  s_5edc2eed7257ad::t_82c56072025e19 7-23
+src/lib/ratelimit.ts
+  s_3a26f9120816c7::t_97f0b19364f20d 4,7-9,12-15,18
+  s_f7f7b8a8c14b8d::t_f8bd6742f01c23 3
+  s_76640cabf33145::t_64b723e2de581f 10
+  s_76640cabf33145::t_1c0b5175d90d84 20-23,26,28-31,34
+  s_5edc2eed7257ad::t_76b6233825ba06 36-39,42,44-47,50
+  s_3a26f9120816c7::t_a27564849b5447 5
+src/app/(dashboard)/teams/[id]/_components/remove-member-button.tsx
+  s_36ca595fc546f8::t_277999fc563077 1-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3afa73977ff08f185145bc20efda74c664ce294c",
+  "prompts": {},
+  "sessions": {
+    "s_03c36f67facd70": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed1b2ec4-8fc8-4b30-aae0-d0ebd4792e39",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_085e5cccc618af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a8dfa39-442d-4511-a163-f1009e3e22b6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_105c4bb77bc9bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36ba9565-75fe-472a-b59d-d48d1ca09919",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_245b8f67bf6895": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "59a65b64-3837-4a1c-afd5-a91fed2cae06",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_253db141621bf7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1231cd7a-5ada-4868-bd1f-66ccbf9a7ca2",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_2db50afb440bf9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f0b80357-911b-49ce-bceb-53930bbb8a1c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_36ca595fc546f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "48bab862-732f-422d-b1d4-95061a84bcf5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_3a26f9120816c7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dec6776-3235-45ce-bb5d-67c40e617d3b",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_3f8ebf9e0e5ae8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f500ee31-0fbd-435e-a6f6-46977adb4ca7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_47972452e39564": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d8e3bff9-aea3-46c1-a2a1-25199bc45b70",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_4908ecbe638d3d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70e17e60-11b0-4bf5-8158-d9dd259c8129",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_52b528673f070a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43429c91-49d5-4408-b516-9ce1d23d2e8e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_5edc2eed7257ad": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f1cd794e-aaad-4814-99bc-5e6709d8f0f0",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_662441c888186e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "03b56612-1c7a-4be2-ae27-a8843b3abd4c",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_6c04c81033ddcd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c1048b28-ffcd-4683-ac66-3f110d6aa550",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_6ebb872fda2a16": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5bbe495b-cb58-484c-918f-506e64e02443",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_74e1815a6b321d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "2f1be322-1f7d-4e1e-8c1c-3898c3dc6619",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_76640cabf33145": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c5fd4e1-88d0-4e84-9232-e729960fd842",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_7daeda11f81aee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c80ebc59-8569-48d1-ba6c-65a030bbbd7e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_7dc4ecddb28f0d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2a1c9e67-4468-4a7e-a762-c19a5f5ed7b7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_8132afe6b76e78": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abd2a0ad-f863-4c4b-998a-0685ab024a3d",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_8201c4fc283019": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "876b5706-4b34-49e0-b66b-1266b3d29867",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_8282707462532d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11fda596-7573-473d-be79-328388f93bb8",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_85f4b728bd2d79": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a190c421-8274-48a4-b390-d571cfa5649a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_9f18314bfd0184": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "370363e9-e381-46fe-bd03-bd8b4b6b8922",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_a7df238a19b7a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f0bbce1e-ec99-402f-ae16-f8009b9893cc",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_a7eddf84718f6c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c8b553b2-ebac-4041-943b-c64eca09885a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_ba3a715f36168a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6d3b4995-f600-4032-9282-53dbe079388d",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_cbf29e28c4a6c6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06451fee-d7ac-4373-8802-a9ced88fd889",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_ce176d7af0120d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "acf31a2a-2eae-48b1-9a17-8f833f298d04",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_e19d41c387cf84": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb230cda-8740-4ab9-b6cd-63d3e7622003",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_f30064b293d347": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "1fa4a2ae-a1b1-4865-a1b2-df52c78627be",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_f7f7b8a8c14b8d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a80e0e18-222c-4144-a52d-4c8f1085260f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    }
+  }
+}
