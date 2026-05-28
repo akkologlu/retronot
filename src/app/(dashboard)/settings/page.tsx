@@ -1,10 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import type { Metadata } from 'next'
+import type { Database } from '@/types/supabase'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import ProfileForm from './_components/profile-form'
+
+type UserProfile = Database['public']['Tables']['users']['Row']
+
+export const metadata: Metadata = {
+  title: 'Settings | RetroNot',
+  description: 'Manage your profile settings.',
+  robots: { index: false },
+}
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -12,27 +19,8 @@ export default async function SettingsPage() {
 
   if (!user) redirect('/login')
 
-  // Fetch user profile from public.users
-  const { data: profile } = await (supabase
-    .from('users') as any)
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  async function updateProfile(formData: FormData) {
-    'use server'
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    const fullName = formData.get('fullName') as string
-    
-    await (supabase.from('users') as any).update({
-      full_name: fullName,
-    }).eq('id', user.id)
-
-    // Also update auth metadata if needed, but public.users is our source of truth for app
-  }
+  const profileResult = await supabase.from('users').select('*').eq('id', user.id).single()
+  const profile = profileResult.data as UserProfile | null
 
   return (
     <div className="space-y-6">
@@ -49,32 +37,12 @@ export default async function SettingsPage() {
             <CardDescription>Update your name and avatar.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={updateProfile} className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={profile?.avatar_url || user.user_metadata?.avatar_url} />
-                  <AvatarFallback>{profile?.full_name?.[0] || user.email?.[0]}</AvatarFallback>
-                </Avatar>
-                <Button variant="outline" size="sm" type="button">Change Avatar</Button>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" value={user.email} disabled />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input 
-                  id="fullName" 
-                  name="fullName" 
-                  defaultValue={profile?.full_name || user.user_metadata?.full_name || ''} 
-                  placeholder="Your Name" 
-                />
-              </div>
-
-              <Button type="submit">Save Changes</Button>
-            </form>
+            <ProfileForm
+              userId={user.id}
+              email={user.email ?? ''}
+              initialName={profile?.full_name || user.user_metadata?.full_name || ''}
+              initialAvatarUrl={profile?.avatar_url || user.user_metadata?.avatar_url || null}
+            />
           </CardContent>
         </Card>
       </div>

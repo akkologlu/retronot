@@ -31,7 +31,7 @@ export default function CreateTeamDialog() {
         toast.success('Team created successfully')
         setOpen(false)
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to create team')
     } finally {
       setIsLoading(false)

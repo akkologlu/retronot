@@ -1,0 +1,10 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sticky note body -->
+  <polygon points="8,8 72,8 92,28 92,92 8,92" fill="#F59E0B"/>
+  <!-- Fold shadow -->
+  <polygon points="72,8 72,28 92,28" fill="#B45309"/>
+  <!-- Text lines suggesting a note -->
+  <line x1="20" y1="46" x2="70" y2="46" stroke="#92400E" stroke-width="3" stroke-linecap="round"/>
+  <line x1="20" y1="58" x2="70" y2="58" stroke="#92400E" stroke-width="3" stroke-linecap="round"/>
+  <line x1="20" y1="70" x2="50" y2="70" stroke="#92400E" stroke-width="3" stroke-linecap="round"/>
+</svg>

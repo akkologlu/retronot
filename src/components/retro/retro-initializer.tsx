@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRetroStore } from '@/lib/store/retro-store'
 import { useRetroRealtime } from '@/hooks/use-retro-realtime'
+import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
 
 type Retro = Database['public']['Tables']['retros']['Row']
@@ -20,6 +21,7 @@ interface RetroInitializerProps {
   groups: Group[]
   votes: Vote[]
   actionItems: ActionItem[]
+  userId: string
 }
 
 export default function RetroInitializer({
@@ -29,8 +31,8 @@ export default function RetroInitializer({
   groups,
   votes,
   actionItems,
+  userId,
 }: RetroInitializerProps) {
-  const initialized = useRef(false)
   const {
     setRetro,
     setParticipants,
@@ -38,21 +40,45 @@ export default function RetroInitializer({
     setGroups,
     setVotes,
     setActionItems,
+    setParticipantUsers,
+    realtimeChannel,
   } = useRetroStore()
 
-  // Initialize store only once
-  if (!initialized.current) {
+  useEffect(() => {
     setRetro(retro)
     setParticipants(participants)
     setCards(cards)
     setGroups(groups)
     setVotes(votes)
     setActionItems(actionItems)
-    initialized.current = true
-  }
+
+    const userIds = participants.map(p => p.user_id).filter((id): id is string => !!id)
+    if (userIds.length > 0) {
+      const supabase = createClient()
+      supabase
+        .from('users')
+        .select('id, full_name, avatar_url')
+        .in('id', userIds)
+        .then(({ data }) => {
+          if (!data) return
+          const map: Record<string, { fullName: string | null; avatarUrl: string | null }> = {}
+          for (const u of data) {
+            map[u.id] = { fullName: u.full_name, avatarUrl: u.avatar_url }
+          }
+          setParticipantUsers(map)
+        })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retro.id])
 
   // Start Realtime Subscription
-  useRetroRealtime(retro.id)
+  useRetroRealtime(retro.id, userId)
+
+  // Track presence so online/offline status works for all phases (including lobby)
+  useEffect(() => {
+    if (!realtimeChannel || !userId) return
+    realtimeChannel.track({ user_id: userId, draft: null })
+  }, [realtimeChannel, userId])
 
   // Handle Phase Redirection
   const { retro: currentRetro } = useRetroStore()
@@ -67,11 +93,12 @@ export default function RetroInitializer({
     if (phase === 'lobby' && !path.includes('/lobby')) {
       router.push(`/retro/${currentRetro.id}/lobby`)
     } else if (phase === 'summary' && !path.includes('/summary')) {
-      router.push(`/retro/${currentRetro.id}/summary`)
+      const t = setTimeout(() => router.push(`/retro/${currentRetro.id}/summary`), 2000)
+      return () => clearTimeout(t)
     } else if (phase !== 'lobby' && phase !== 'summary' && !path.includes('/board')) {
       router.push(`/retro/${currentRetro.id}/board`)
     }
-  }, [currentRetro?.phase, currentRetro?.id, router])
+  }, [currentRetro?.phase, currentRetro?.id, router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }

@@ -1,0 +1,24 @@
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- "retro" — regular weight -->
+  <text
+    x="0"
+    y="34"
+    font-family="'Inter', system-ui, -apple-system, sans-serif"
+    font-size="32"
+    font-weight="400"
+    letter-spacing="-0.5"
+    fill="#0F172A"
+  >retro</text>
+  <!-- "not" — bold, indigo -->
+  <text
+    x="98"
+    y="34"
+    font-family="'Inter', system-ui, -apple-system, sans-serif"
+    font-size="32"
+    font-weight="700"
+    letter-spacing="-0.5"
+    fill="#4F46E5"
+  >not</text>
+  <!-- Amber underline under "not" -->
+  <rect x="98" y="40" width="66" height="3" rx="1.5" fill="#F59E0B"/>
+</svg>

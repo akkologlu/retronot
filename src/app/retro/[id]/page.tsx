@@ -4,20 +4,20 @@ import { createClient } from '@/lib/supabase/server'
 export default async function RetroPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { id } = await params
-  const { data: retro, error } = await (supabase
-    .from('retros') as any)
+  const { data: retro } = await supabase
+    .from('retros')
     .select('phase')
     .eq('id', id)
     .single()
 
   if (!retro) {
     return (
-      <div className="p-4">
-        <h1 className="text-xl font-bold text-red-500">Retro not found</h1>
-        <pre className="mt-2 rounded bg-gray-100 p-2 text-sm text-black">
-          {JSON.stringify(error, null, 2)}
-        </pre>
-        <p className="mt-2 text-sm text-gray-500">ID: {id}</p>
+      <div className="flex min-h-[50vh] flex-col items-center justify-center p-8 text-center">
+        <p className="text-6xl font-bold text-muted-foreground/20">404</p>
+        <h1 className="mt-2 text-xl font-semibold">Retro not found</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          This retro may have been deleted or you don&apos;t have access.
+        </p>
       </div>
     )
   }

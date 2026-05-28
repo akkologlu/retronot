@@ -48,7 +48,7 @@
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(240 10% 3.9%);
 
-    --primary: hsl(240 5.9% 10%);
+    --primary: hsl(243 75% 58%);
     --primary-foreground: hsl(0 0% 98%);
 
     --secondary: hsl(240 4.8% 95.9%);
@@ -65,7 +65,7 @@
 
     --border: hsl(240 5.9% 90%);
     --input: hsl(240 5.9% 90%);
-    --ring: hsl(240 10% 3.9%);
+    --ring: hsl(243 75% 58%);
 
     --radius: 0.5rem;
   }
@@ -80,8 +80,8 @@
     --popover: hsl(240 10% 3.9%);
     --popover-foreground: hsl(0 0% 98%);
 
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(240 5.9% 10%);
+    --primary: hsl(243 75% 65%);
+    --primary-foreground: hsl(0 0% 98%);
 
     --secondary: hsl(240 3.7% 15.9%);
     --secondary-foreground: hsl(0 0% 98%);
@@ -97,13 +97,16 @@
 
     --border: hsl(240 3.7% 15.9%);
     --input: hsl(240 3.7% 15.9%);
-    --ring: hsl(240 4.9% 83.9%);
+    --ring: hsl(243 75% 65%);
   }
 }
 
 @layer base {
   * {
     border-color: var(--border);
+  }
+  button:not(:disabled) {
+    cursor: pointer;
   }
   body {
     background-color: var(--background);

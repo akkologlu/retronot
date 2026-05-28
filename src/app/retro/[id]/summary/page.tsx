@@ -1,17 +1,18 @@
 'use client'
 
-import { toPng } from 'html-to-image'
-import jsPDF from 'jspdf'
 import { useRef, useState, useMemo } from 'react'
 import { useRetroStore } from '@/lib/store/retro-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, CheckCircle2, Image as ImageIcon } from 'lucide-react'
+import { Download, CheckCircle2, Image as ImageIcon, LayoutDashboard } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { TEMPLATE_COLUMNS, COLUMN_COLORS } from '@/lib/constants'
 
 export default function SummaryPage() {
   const { retro, cards, votes, actionItems, groups } = useRetroStore()
+  const router = useRouter()
   const [isExporting, setIsExporting] = useState(false)
   const [isSavingImage, setIsSavingImage] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -82,6 +83,11 @@ export default function SummaryPage() {
     setIsExporting(true)
 
     try {
+      const [{ toPng }, { default: jsPDF }] = await Promise.all([
+        import('html-to-image'),
+        import('jspdf'),
+      ])
+
       // Add a small delay to ensure rendering is complete
       await new Promise(resolve => setTimeout(resolve, 100))
 
@@ -102,8 +108,8 @@ export default function SummaryPage() {
 
       pdf.addImage(dataUrl, 'PNG', 0, 0, contentRef.current.scrollWidth, contentRef.current.scrollHeight)
       pdf.save(`retro-summary-${new Date().toISOString().split('T')[0]}.pdf`)
-    } catch (error) {
-      console.error('Failed to export PDF:', error)
+    } catch {
+      toast.error('Failed to export PDF')
     } finally {
       setIsExporting(false)
     }
@@ -114,6 +120,8 @@ export default function SummaryPage() {
     setIsSavingImage(true)
 
     try {
+      const { toPng } = await import('html-to-image')
+
       // Add a small delay to ensure rendering is complete
       await new Promise(resolve => setTimeout(resolve, 100))
 
@@ -129,8 +137,8 @@ export default function SummaryPage() {
       link.download = `retro-summary-${new Date().toISOString().split('T')[0]}.png`
       link.href = dataUrl
       link.click()
-    } catch (error) {
-      console.error('Failed to save image:', error)
+    } catch {
+      toast.error('Failed to save image')
     } finally {
       setIsSavingImage(false)
     }
@@ -150,6 +158,10 @@ export default function SummaryPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Button>
           <Button variant="outline" onClick={handleSaveImage} disabled={isSavingImage}>
             <ImageIcon className={`mr-2 h-4 w-4 ${isSavingImage ? 'animate-pulse' : ''}`} />
             {isSavingImage ? 'Saving...' : 'Save as Image'}
@@ -214,7 +226,7 @@ export default function SummaryPage() {
                               </div>
                               <ul className="space-y-1">
                                 {itemActionItems.map(ai => (
-                                  <li key={ai.id} className="text-xs bg-green-50 text-green-900 p-2 rounded border border-green-100">
+                                  <li key={ai.id} className="text-xs bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100 p-2 rounded border border-green-100 dark:border-green-900">
                                     {ai.content}
                                   </li>
                                 ))}

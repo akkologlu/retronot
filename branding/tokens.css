@@ -1,0 +1,62 @@
+/* RetroNot — Brand Tokens */
+
+:root {
+  /* Primary */
+  --rn-indigo:        #4F46E5;
+  --rn-indigo-dark:   #3730A3;
+  --rn-indigo-light:  #818CF8;
+
+  /* Accent */
+  --rn-amber:         #F59E0B;
+  --rn-amber-dark:    #B45309;
+  --rn-amber-darker:  #92400E;
+
+  /* Neutral */
+  --rn-ink:           #0F172A;
+  --rn-slate:         #475569;
+  --rn-muted:         #94A3B8;
+  --rn-border:        #E2E8F0;
+  --rn-cream:         #FEFCE8;
+  --rn-white:         #FFFFFF;
+
+  /* Semantic */
+  --rn-success:       #10B981;
+  --rn-danger:        #F43F5E;
+  --rn-warning:       #F59E0B;
+
+  /* Typography */
+  --rn-font-sans:     'Inter', system-ui, -apple-system, sans-serif;
+  --rn-font-serif:    'Fraunces', Georgia, serif;
+  --rn-font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing scale */
+  --rn-space-1:  4px;
+  --rn-space-2:  8px;
+  --rn-space-3:  12px;
+  --rn-space-4:  16px;
+  --rn-space-6:  24px;
+  --rn-space-8:  32px;
+  --rn-space-12: 48px;
+  --rn-space-16: 64px;
+
+  /* Radius */
+  --rn-radius-sm:  4px;
+  --rn-radius-md:  8px;
+  --rn-radius-lg:  12px;
+  --rn-radius-xl:  16px;
+  --rn-radius-full: 9999px;
+
+  /* Shadow */
+  --rn-shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --rn-shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --rn-shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --rn-shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Animation */
+  --rn-ease:       cubic-bezier(0.4, 0, 0.2, 1);
+  --rn-ease-in:    cubic-bezier(0.4, 0, 1, 1);
+  --rn-ease-out:   cubic-bezier(0, 0, 0.2, 1);
+  --rn-duration-fast:   150ms;
+  --rn-duration-base:   200ms;
+  --rn-duration-slow:   300ms;
+}

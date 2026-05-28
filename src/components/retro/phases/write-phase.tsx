@@ -2,116 +2,184 @@
 
 import { useState, useEffect } from 'react'
 import { useRetroStore } from '@/lib/store/retro-store'
-import { createBrowserClient } from '@supabase/ssr'
-import { Database } from '@/types/supabase'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Send } from 'lucide-react'
+import { Plus, Send, Pencil, Check, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { TEMPLATE_COLUMNS } from '@/lib/constants'
+import { advancePhase } from '@/app/actions/retro'
+import { createCard, updateCardContent, deleteCard } from '@/app/actions/card'
+import { CardContentSchema, parseRetroConfig } from '@/lib/schemas'
+import PhaseTimer from '@/components/retro/phase-timer'
+import type { Database } from '@/types/supabase'
 
+type CardRow = Database['public']['Tables']['retro_cards']['Row']
 
+const CARD_MAX = 1000
 
 export default function WritePhase() {
   const { retro, cards, participants, drafts, realtimeChannel } = useRetroStore()
   const [newCardContent, setNewCardContent] = useState('')
   const [activeColumn, setActiveColumn] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
-  
-  const supabase = createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const [editingCardId, setEditingCardId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [user, setUser] = useState<{ id: string } | null>(null)
+  const [isAdvancing, setIsAdvancing] = useState(false)
+
+  const supabase = createClient()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-    }
-    getUser()
-  }, [])
-
-  // Track presence using shared channel
-  useEffect(() => {
-    if (!retro || !user || !realtimeChannel) return
-    
-    // We don't subscribe here, just track
-    // The channel is already subscribed in useRetroRealtime
-    const trackPresence = async () => {
-       await realtimeChannel.track({ user_id: user.id, draft: null })
-    }
-    trackPresence()
-    
-    // No cleanup needed for tracking, but maybe we want to untrack on unmount?
-    // Actually, if we unmount, we might want to clear our draft status
-    return () => {
-       // We can try to untrack or set draft to null
-       if (realtimeChannel) {
-         realtimeChannel.track({ user_id: user.id, draft: null })
-       }
-    }
-  }, [retro?.id, user?.id, realtimeChannel])
+    let cancelled = false
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!cancelled) setUser(user)
+    })
+    return () => { cancelled = true }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTyping = async (column: string | null, content: string = '') => {
     if (!realtimeChannel || !user) return
     const draft = column ? { column, length: content.length } : null
-    await realtimeChannel.track({ user_id: user.id, draft })
+    await realtimeChannel.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { user_id: user.id, draft },
+    })
   }
 
   if (!retro) return null
 
-  const columns = TEMPLATE_COLUMNS[retro.template_type] || ['Column 1', 'Column 2', 'Column 3']
-  const isOwner = user && retro.created_by === user.id
+  const config = parseRetroConfig(retro.config)
+  const columns = TEMPLATE_COLUMNS[retro.template_type] || config.customColumns || ['Column 1', 'Column 2', 'Column 3']
+  const isOwner = user && (retro.moderator_id ?? retro.created_by) === user.id
 
   const handleAddCard = async (column: string) => {
-    if (!newCardContent.trim()) return
-    const { error } = await (supabase.from('retro_cards') as any).insert({
+    const parsed = CardContentSchema.safeParse(newCardContent)
+    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return }
+    if (!user) return
+
+    const tempId = crypto.randomUUID()
+    const optimisticCard: CardRow = {
+      id: tempId,
       retro_id: retro.id,
-      content: newCardContent,
+      content: parsed.data,
       column_name: column,
-      author_id: user?.id
+      author_id: user.id,
+      participant_id: null,
+      group_id: null,
+      author_revealed: false,
+      created_at: new Date().toISOString(),
+    }
+
+    useRetroStore.getState().addCard(optimisticCard)
+    setNewCardContent('')
+    setActiveColumn(null)
+    handleTyping(null)
+
+    // Broadcast optimistic card immediately so other users see it instantly
+    realtimeChannel?.send({
+      type: 'broadcast',
+      event: 'card_sync',
+      payload: { action: 'insert', card: optimisticCard },
     })
 
-    if (error) {
-      toast.error('Failed to add card')
+    const result = await createCard(retro.id, parsed.data, column)
+
+    if (result.error) {
+      toast.error(result.error)
+      useRetroStore.getState().removeCard(tempId)
+      // Notify others to remove the failed card
+      realtimeChannel?.send({
+        type: 'broadcast',
+        event: 'card_sync',
+        payload: { action: 'delete', cardId: tempId },
+      })
+    } else if (result.card) {
+      // Replace temp card with real one (has server-assigned ID)
+      useRetroStore.getState().removeCard(tempId)
+      useRetroStore.getState().addCard(result.card)
+      realtimeChannel?.send({
+        type: 'broadcast',
+        event: 'card_sync',
+        payload: { action: 'replace', oldId: tempId, card: result.card },
+      })
+    }
+  }
+
+  const handleEditCard = async (cardId: string) => {
+    const parsed = CardContentSchema.safeParse(editContent)
+    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return }
+
+    const { getState } = useRetroStore
+    const card = getState().cards.find(c => c.id === cardId)
+    if (!card) return
+
+    const updatedCard = { ...card, content: parsed.data }
+    getState().updateCard(updatedCard)
+    setEditingCardId(null)
+
+    const result = await updateCardContent(cardId, parsed.data)
+
+    if (result.error) {
+      toast.error(result.error)
+      getState().updateCard(card)
     } else {
-      setNewCardContent('')
-      setActiveColumn(null)
-      handleTyping(null)
+      realtimeChannel?.send({
+        type: 'broadcast',
+        event: 'card_sync',
+        payload: { action: 'update', card: updatedCard },
+      })
     }
   }
 
   const handleDeleteCard = async (cardId: string) => {
-    console.log('Attempting to delete card:', cardId)
-    const { error } = await supabase.from('retro_cards').delete().eq('id', cardId)
-    if (error) {
-      console.error('Delete failed:', error)
-      toast.error(`Failed to delete card: ${error.message}`)
+    const result = await deleteCard(cardId)
+    if (result.error) {
+      toast.error(`Failed to delete card: ${result.error}`)
     } else {
-      console.log('Card deleted successfully')
-      // Optimistic update: remove locally immediately
-      // Realtime will eventually sync, but this makes it snappy
       useRetroStore.getState().removeCard(cardId)
+      realtimeChannel?.send({
+        type: 'broadcast',
+        event: 'card_sync',
+        payload: { action: 'delete', cardId },
+      })
     }
   }
 
   const handleNextPhase = async () => {
-    const { error } = await (supabase.from('retros') as any).update({ phase: 'group' }).eq('id', retro.id)
-    if (error) toast.error('Failed to update phase')
+    if (isAdvancing) return
+    setIsAdvancing(true)
+    try {
+      const result = await advancePhase(retro.id)
+      if (result?.error) toast.error(result.error)
+    } finally {
+      setIsAdvancing(false)
+    }
   }
 
   return (
     <div className="flex h-full flex-col p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Write Phase</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">Write Phase</h2>
+          {config.phaseTimers?.write && retro.phase_started_at && (
+            <PhaseTimer
+              durationMinutes={config.phaseTimers.write}
+              startedAt={retro.phase_started_at}
+              isHost={!!isOwner}
+              retroId={retro.id}
+              phase="write"
+            />
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
             {participants.length} participants online
           </div>
           {isOwner && (
-            <Button onClick={handleNextPhase}>
+            <Button onClick={handleNextPhase} disabled={isAdvancing}>
               Next Phase
             </Button>
           )}
@@ -121,17 +189,17 @@ export default function WritePhase() {
       <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-3">
         {columns.map((column) => (
           <div key={column} className="flex flex-col rounded-xl bg-muted/50 p-4">
-            <h3 className="mb-4 font-semibold text-lg text-center uppercase tracking-wide text-muted-foreground flex items-center justify-center gap-2">
+            <h3 className="mb-4 font-semibold text-lg text-center uppercase tracking-wide text-muted-foreground">
               {column}
             </h3>
-            
+
             <div className="flex-1 space-y-4 overflow-y-auto pr-2">
               <AnimatePresence mode="popLayout">
-                {/* Render Real Cards */}
                 {cards
                   .filter((c) => c.column_name === column)
                   .map((card) => {
                     const isMyCard = user && card.author_id === user.id
+                    const isEditing = editingCardId === card.id
                     return (
                       <motion.div
                         key={card.id}
@@ -142,13 +210,56 @@ export default function WritePhase() {
                       >
                         <Card className="bg-card shadow-sm group relative">
                           <CardContent className="p-3">
-                            <div className={isMyCard ? '' : 'blur-sm select-none'}>
-                              {isMyCard ? card.content : 'Hidden Content'}
-                            </div>
-                            {isMyCard && (
-                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <DeleteButton onDelete={() => handleDeleteCard(card.id)} />
+                            {isEditing ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  value={editContent}
+                                  onChange={(e) => setEditContent(e.target.value.slice(0, CARD_MAX))}
+                                  className="min-h-[60px] text-sm"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEditCard(card.id) }
+                                    if (e.key === 'Escape') setEditingCardId(null)
+                                  }}
+                                />
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-muted-foreground">{editContent.length} / {CARD_MAX}</span>
+                                  <div className="flex gap-1">
+                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => handleEditCard(card.id)}>
+                                      <Check className="h-3 w-3" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setEditingCardId(null)}>
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
                               </div>
+                            ) : (
+                              <>
+                                <div
+                                  className={isMyCard ? 'cursor-pointer' : 'blur-sm select-none'}
+                                  onDoubleClick={() => {
+                                    if (isMyCard) {
+                                      setEditingCardId(card.id)
+                                      setEditContent(card.content)
+                                    }
+                                  }}
+                                >
+                                  {isMyCard ? card.content : 'Hidden Content'}
+                                </div>
+                                {isMyCard && (
+                                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                    <button
+                                      className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                      onClick={() => { setEditingCardId(card.id); setEditContent(card.content) }}
+                                      aria-label="Edit card"
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </button>
+                                    <DeleteButton onDelete={() => handleDeleteCard(card.id)} />
+                                  </div>
+                                )}
+                              </>
                             )}
                           </CardContent>
                         </Card>
@@ -156,7 +267,6 @@ export default function WritePhase() {
                     )
                   })}
 
-                {/* Render Ghost Cards (Drafts) */}
                 {Object.entries(drafts)
                   .filter(([uid, draft]) => draft.column === column && uid !== user?.id)
                   .map(([uid, draft]) => (
@@ -173,10 +283,9 @@ export default function WritePhase() {
                             <span className="text-xs text-muted-foreground animate-pulse">Someone is typing...</span>
                           </div>
                           <div className="space-y-2">
-                             {/* Dynamic skeleton based on length */}
-                             <div className="h-4 bg-muted rounded w-full animate-pulse" />
-                             {draft.length > 20 && <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />}
-                             {draft.length > 50 && <div className="h-4 bg-muted rounded w-5/6 animate-pulse" />}
+                            <div className="h-4 bg-muted rounded w-full animate-pulse" />
+                            {draft.length > 20 && <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />}
+                            {draft.length > 50 && <div className="h-4 bg-muted rounded w-5/6 animate-pulse" />}
                           </div>
                         </CardContent>
                       </Card>
@@ -192,13 +301,11 @@ export default function WritePhase() {
                     placeholder="Type your thought..."
                     value={newCardContent}
                     onChange={(e) => {
-                      const content = e.target.value
+                      const content = e.target.value.slice(0, CARD_MAX)
                       setNewCardContent(content)
                       handleTyping(column, content)
                     }}
-                    onBlur={() => handleTyping(null)} // Optional: clear draft on blur? Maybe keep it?
-                    // Let's keep it on blur so they don't lose draft state visibility if they click away momentarily
-                    // But if they cancel, we clear it.
+                    onBlur={() => handleTyping(null)}
                     className="min-h-[80px]"
                     autoFocus
                     onKeyDown={(e) => {
@@ -208,16 +315,21 @@ export default function WritePhase() {
                       }
                     }}
                   />
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => handleAddCard(column)}>
-                      <Send className="mr-2 h-3 w-3" /> Add
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => {
-                      setActiveColumn(null)
-                      handleTyping(null)
-                    }}>
-                      Cancel
-                    </Button>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs ${newCardContent.length >= CARD_MAX ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {newCardContent.length} / {CARD_MAX}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleAddCard(column)} disabled={newCardContent.length === 0 || newCardContent.length > CARD_MAX}>
+                        <Send className="mr-2 h-3 w-3" /> Add
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setActiveColumn(null)
+                        handleTyping(null)
+                      }}>
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -251,7 +363,6 @@ function DeleteButton({ onDelete }: { onDelete: () => void }) {
       onTouchEnd={() => setIsHolding(false)}
     >
       <span className="sr-only">Delete</span>
-      {/* Progress Fill */}
       <motion.div
         className="absolute inset-0 bg-red-200/50"
         initial={{ width: 0 }}

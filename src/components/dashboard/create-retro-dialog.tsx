@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Loader2, LayoutTemplate } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -50,7 +50,7 @@ export default function CreateRetroDialog({ teams }: CreateRetroDialogProps) {
         // Redirect happens in server action
         setOpen(false)
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to create retro')
     } finally {
       setIsLoading(false)
