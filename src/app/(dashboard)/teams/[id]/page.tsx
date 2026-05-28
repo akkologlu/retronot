@@ -88,7 +88,7 @@ export default async function TeamDetailPage({ params }: PageProps) {
   const retroNameMap = new Map(retrosStats.map((r: { id: string; name: string }) => [r.id, r.name]))
 
   // Round 2: action items (needs retro IDs). HEAD queries for accurate counts without fetching all rows.
-  let actionItems: { id: string; content: string; completed: boolean; retro_id: string; assigned_to_user_id: string | null; due_date: string | null }[] = []
+  let actionItems: { id: string; content: string; completed: boolean; retro_id: string; assigned_to_user_id: string | null; users: { full_name: string | null; email: string } | null }[] = []
   let totalActions = 0
   let completedActions = 0
 

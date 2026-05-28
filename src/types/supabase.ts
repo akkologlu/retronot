@@ -73,7 +73,22 @@ export interface Database {
           role?: "owner" | "member";
           joined_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "team_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       retros: {
         Row: {
@@ -271,7 +286,22 @@ export interface Database {
           card_id?: string | null;
           carried_over_from?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "action_items_retro_id_fkey";
+            columns: ["retro_id"];
+            isOneToOne: false;
+            referencedRelation: "retros";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "action_items_assigned_to_user_id_fkey";
+            columns: ["assigned_to_user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       invite_links: {
         Row: {
