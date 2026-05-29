@@ -18,6 +18,7 @@ function PhaseComponent({ phase }: { phase: string }) {
     case 'group': return <GroupPhase />
     case 'vote': return <VotePhase />
     case 'discuss': return <DiscussPhase />
+    case 'summary': return <div className="flex h-full items-center justify-center"><Loader2 className="animate-spin" /></div>
     default: return <div>Unknown phase: {phase}</div>
   }
 }
@@ -31,8 +32,12 @@ export default function RetroBoardPage() {
     const current = retro?.phase
     if (!current) return
 
-    // Skip overlay on first load, only show on actual phase changes
-    if (prevPhaseRef.current !== null && prevPhaseRef.current !== current) {
+    if (prevPhaseRef.current === null) {
+      // First load: show overlay if entering write phase (lobby → write transition)
+      if (current === 'write') {
+        setOverlayPhase(current as Phase) // eslint-disable-line react-hooks/set-state-in-effect
+      }
+    } else if (prevPhaseRef.current !== current) {
       setOverlayPhase(current as Phase) // eslint-disable-line react-hooks/set-state-in-effect
     }
     prevPhaseRef.current = current

@@ -52,14 +52,26 @@ export async function removeVote(voteId: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  // Get participant id to ensure they can only remove their own votes
+  // Look up the vote to find its retro_id for correct participant resolution
+  const { data: vote } = await supabase
+    .from("retro_votes")
+    .select("retro_id, participant_id")
+    .eq("id", voteId)
+    .single();
+
+  if (!vote) return { error: "Vote not found" };
+
+  // Get participant id scoped to the correct retro
   const { data: participant } = await supabase
     .from("retro_participants")
     .select("id")
+    .eq("retro_id", vote.retro_id)
     .eq("user_id", user.id)
     .single();
 
   if (!participant) return { error: "Not a participant" };
+  if (participant.id !== vote.participant_id)
+    return { error: "Not authorized" };
 
   const { error } = await supabase
     .from("retro_votes")

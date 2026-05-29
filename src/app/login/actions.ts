@@ -58,7 +58,7 @@ export async function signup(formData: FormData) {
     // Redis unavailable — allow the request
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { full_name: fullName } },
@@ -68,8 +68,14 @@ export async function signup(formData: FormData) {
     return { error: error.message };
   }
 
-  revalidatePath("/", "layout");
-  redirect(next);
+  // If email confirmation is required, user won't have a session yet.
+  // Check if identities array is empty — means the email is already registered.
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    return { error: "An account with this email already exists." };
+  }
+
+  // Return success so the UI can show the OTP verification form
+  return { success: true, email, next };
 }
 
 export async function loginWithMagicLink(formData: FormData) {
@@ -92,6 +98,48 @@ export async function loginWithMagicLink(formData: FormData) {
     options: {
       emailRedirectTo: `${base}/auth/callback?next=${encodeURIComponent(next)}`,
     },
+  });
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
+export async function verifySignupOtp(
+  email: string,
+  token: string,
+  next: string,
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: "signup",
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(sanitizeNext(next));
+}
+
+export async function resendSignupOtp(email: string) {
+  const supabase = await createClient();
+
+  // Rate limit by email
+  try {
+    const { success } = await loginRatelimit.limit(email.toLowerCase());
+    if (!success)
+      return { error: "Too many requests. Please try again later." };
+  } catch {
+    // Redis unavailable — allow the request
+  }
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
   });
 
   if (error) return { error: error.message };

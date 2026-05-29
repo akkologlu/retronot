@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { login, signup, loginWithGoogle, loginWithMagicLink } from './actions'
-import { Loader2, Mail } from 'lucide-react'
+import { login, signup, loginWithGoogle, loginWithMagicLink, verifySignupOtp, resendSignupOtp } from './actions'
+import { Loader2, Mail, ShieldCheck } from 'lucide-react'
 import { Logo } from '@/components/layout/logo'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
@@ -19,11 +19,37 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [pendingVerification, setPendingVerification] = useState<{ email: string; next: string } | null>(null)
+  const [otpCode, setOtpCode] = useState('')
 
   const handleAction = async (formData: FormData, action: 'login' | 'signup') => {
     setIsLoading(true)
     try {
       const result = action === 'login' ? await login(formData) : await signup(formData)
+      if (result?.error) {
+        toast.error(result.error)
+        setIsLoading(false)
+      } else if (action === 'signup' && result && 'success' in result && result.success) {
+        // Signup succeeded — show OTP verification form
+        setPendingVerification({
+          email: (result as { email: string; next: string }).email,
+          next: (result as { email: string; next: string }).next,
+        })
+        setIsLoading(false)
+      }
+    } catch (error) {
+      const digest = (error as { digest?: string })?.digest
+      if (typeof digest === 'string' && digest.startsWith('NEXT_REDIRECT')) throw error
+      toast.error('Something went wrong')
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async () => {
+    if (!pendingVerification || otpCode.length !== 8) return
+    setIsLoading(true)
+    try {
+      const result = await verifySignupOtp(pendingVerification.email, otpCode, pendingVerification.next)
       if (result?.error) {
         toast.error(result.error)
         setIsLoading(false)
@@ -34,6 +60,22 @@ function LoginForm() {
       toast.error('Something went wrong')
       setIsLoading(false)
     }
+  }
+
+  const handleResendOtp = async () => {
+    if (!pendingVerification) return
+    setIsLoading(true)
+    try {
+      const result = await resendSignupOtp(pendingVerification.email)
+      if (result?.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Verification code resent. Check your email.')
+      }
+    } catch {
+      toast.error('Something went wrong')
+    }
+    setIsLoading(false)
   }
 
   const handleMagicLink = async (formData: FormData) => {
@@ -58,6 +100,43 @@ function LoginForm() {
 
   return (
     <>
+      {pendingVerification ? (
+        <div className="flex flex-col items-center gap-4 py-4 text-center">
+          <ShieldCheck className="h-10 w-10 text-primary" />
+          <div>
+            <p className="font-medium text-lg">Verify your email</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              We sent a verification code to <span className="font-medium text-foreground">{pendingVerification.email}</span>
+            </p>
+          </div>
+          <div className="w-full max-w-60 space-y-4">
+            <Input
+              type="text"
+              inputMode="numeric"
+              maxLength={8}
+              placeholder="00000000"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              className="text-center text-2xl tracking-[0.3em] font-mono"
+              autoFocus
+            />
+            <Button className="w-full" onClick={handleVerifyOtp} disabled={isLoading || otpCode.length !== 8}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Verify & Sign In
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Didn&apos;t receive the code?</span>
+            <Button variant="link" size="sm" className="p-0 h-auto" onClick={handleResendOtp} disabled={isLoading}>
+              Resend
+            </Button>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => { setPendingVerification(null); setOtpCode('') }}>
+            ← Back to Sign Up
+          </Button>
+        </div>
+      ) : (
+      <>
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="login">Login</TabsTrigger>
@@ -179,6 +258,8 @@ function LoginForm() {
         {' '}and{' '}
         <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">Privacy Policy</Link>.
       </p>
+    </>
+      )}
     </>
   )
 }

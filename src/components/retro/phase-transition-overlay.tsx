@@ -17,7 +17,7 @@ const PHASE_CONFIG: Record<Phase, {
     icon: <PenLine className="w-16 h-16" />,
     title: 'Writing Phase',
     subtitle: 'Share your thoughts anonymously',
-    from: '',
+    from: 'Retro is starting!',
     gradient: 'from-amber-400/20 to-indigo-500/20',
   },
   group: {
