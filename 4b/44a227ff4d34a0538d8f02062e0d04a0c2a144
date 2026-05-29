@@ -1,0 +1,51 @@
+src/app/retro/[id]/board/page.tsx
+  s_566c77ea97b3bb::t_9b4621e04ba96a 35-40
+  s_5ecb274b728132::t_cc215ebd5800f4 21
+src/app/login/actions.ts
+  s_7f2d944a0e532e::t_ebcd203b4f88f5 61,71-78
+  s_7f2d944a0e532e::t_f7d889e1bf07f7 107-109,111-148
+src/app/login/page.tsx
+  s_7f2d944a0e532e::t_af5c2385405576 22-23
+  s_7f2d944a0e532e::t_2724bc25908e0a 262-263
+  s_7f2d944a0e532e::t_99f0f6a6026c34 49,109,116-117,119-120,123
+  s_7f2d944a0e532e::t_707b88e09b4ee4 103-108,110-111,113-115,118,121-122,124-139
+  s_7f2d944a0e532e::t_e95764a14e226b 32-48,50-52,65-78
+  s_7f2d944a0e532e::t_ba30f67782054a 9-10
+  s_7f2d944a0e532e::t_1d67dace3dbfba 112
+src/app/actions/vote.ts
+  s_5ecb274b728132::t_cc215ebd5800f4 55-64,68,73-74
+src/components/retro/phase-transition-overlay.tsx
+  s_566c77ea97b3bb::t_9b4621e04ba96a 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4b44a227ff4d34a0538d8f02062e0d04a0c2a144",
+  "prompts": {},
+  "sessions": {
+    "s_566c77ea97b3bb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8cd9a0c6-7e06-4975-88d4-029d5e30f3c5",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_5ecb274b728132": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "42b9cc0a-3175-4dcb-86c2-16b0ef238cef",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_7f2d944a0e532e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5f9d47a5-5f63-49e6-9c57-1abc4e3235a9",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    }
+  }
+}
