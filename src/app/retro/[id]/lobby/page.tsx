@@ -101,8 +101,9 @@ export default function LobbyPage({ params }: { params: Promise<{ id: string }> 
       if (result.error) {
         toast.error(result.error)
       } else if (result.url) {
-        setInviteUrl(result.url)
-        await navigator.clipboard.writeText(result.url)
+        const urlWithRetro = `${result.url}?retroId=${retro.id}`
+        setInviteUrl(urlWithRetro)
+        await navigator.clipboard.writeText(urlWithRetro)
         toast.success('Invite link copied to clipboard!')
       }
     } catch {

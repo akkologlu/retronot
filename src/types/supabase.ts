@@ -362,6 +362,15 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      check_retro_access: {
+        Args: { p_retro_id: string };
+        Returns: {
+          team_id: string;
+          team_name: string;
+          retro_name: string;
+          is_team_member: boolean;
+        }[];
+      };
       claim_moderator: {
         Args: { p_retro_id: string };
         Returns: undefined;
@@ -372,7 +381,11 @@ export interface Database {
       };
       join_team_via_invite: {
         Args: { p_token: string };
-        Returns: string;
+        Returns: undefined;
+      };
+      join_team_via_retro: {
+        Args: { p_retro_id: string };
+        Returns: undefined;
       };
     };
     Enums: {

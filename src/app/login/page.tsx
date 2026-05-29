@@ -26,12 +26,12 @@ function LoginForm() {
       const result = action === 'login' ? await login(formData) : await signup(formData)
       if (result?.error) {
         toast.error(result.error)
+        setIsLoading(false)
       }
     } catch (error) {
       const digest = (error as { digest?: string })?.digest
       if (typeof digest === 'string' && digest.startsWith('NEXT_REDIRECT')) throw error
       toast.error('Something went wrong')
-    } finally {
       setIsLoading(false)
     }
   }
@@ -47,9 +47,8 @@ function LoginForm() {
       }
     } catch {
       toast.error('Something went wrong')
-    } finally {
-      setIsLoading(false)
     }
+    setIsLoading(false)
   }
 
   const handleGoogleLogin = async () => {
@@ -67,7 +66,7 @@ function LoginForm() {
         </TabsList>
 
         <TabsContent value="login">
-          <form action={(formData) => handleAction(formData, 'login')} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleAction(new FormData(e.currentTarget), 'login') }} className="space-y-4">
             <input type="hidden" name="next" value={next} />
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -90,7 +89,7 @@ function LoginForm() {
         </TabsContent>
 
         <TabsContent value="signup">
-          <form action={(formData) => handleAction(formData, 'signup')} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleAction(new FormData(e.currentTarget), 'signup') }} className="space-y-4">
             <input type="hidden" name="next" value={next} />
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
@@ -133,7 +132,7 @@ function LoginForm() {
               <Button variant="ghost" size="sm" onClick={() => setMagicLinkSent(false)}>Try again</Button>
             </div>
           ) : (
-            <form action={handleMagicLink} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); handleMagicLink(new FormData(e.currentTarget)) }} className="space-y-4">
               <input type="hidden" name="next" value={next} />
               <div className="space-y-2">
                 <Label htmlFor="magic-email">Email</Label>

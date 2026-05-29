@@ -2,10 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, FileStack, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, FileStack, Menu, X, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
@@ -28,8 +36,11 @@ export default function Sidebar({ user, displayName, avatarUrl }: SidebarProps) 
   const { theme, setTheme } = useTheme()
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [signOutOpen, setSignOutOpen] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
   const handleSignOut = async () => {
+    setSigningOut(true)
     await supabase.auth.signOut()
     router.push('/login')
   }
@@ -95,7 +106,7 @@ export default function Sidebar({ user, displayName, avatarUrl }: SidebarProps) 
           {mounted && theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive" onClick={handleSignOut}>
+        <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive" onClick={() => setSignOutOpen(true)}>
           <LogOut className="h-4 w-4" />
           Sign Out
         </Button>
@@ -105,6 +116,36 @@ export default function Sidebar({ user, displayName, avatarUrl }: SidebarProps) 
 
   return (
     <>
+      {/* Sign out confirmation dialog */}
+      <Dialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+        <DialogContent showCloseButton={false} className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sign out</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to sign out?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setSignOutOpen(false)}
+              disabled={signingOut}
+              className="flex-1 sm:flex-none"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="flex-1 sm:flex-none"
+            >
+              {signingOut && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Mobile hamburger */}
       <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center border-b bg-card px-4 md:hidden">
         <Button
