@@ -1,0 +1,53 @@
+src/components/retro/join-retro-card.tsx
+  s_feeac43c77a95e::t_927d2a16a032c7 1-38
+src/components/layout/sidebar.tsx
+  s_feeac43c77a95e::t_b3d37a8bfcac01 109,119-148
+  s_feeac43c77a95e::t_af1f85164f6b20 5,9-16
+  s_feeac43c77a95e::t_c3594682c98036 39-40,43
+src/app/invite/[token]/join-team-button.tsx
+  s_feeac43c77a95e::t_6da197e423e078 1-16
+src/app/invite/[token]/page.tsx
+  s_feeac43c77a95e::t_d9fa24f8a860b0 4,6-8,29-43,73,80-82,95
+  s_feeac43c77a95e::t_907f2ee26ae441 57-61,64,66-69
+src/app/login/page.tsx
+  s_421834363df7a8::t_aa93ce66c570c5 69,92,135
+  s_feeac43c77a95e::t_92584597f57200 51
+  s_feeac43c77a95e::t_58da9400542fe8 29
+supabase/migrations/055_join_team_via_retro.sql
+  s_feeac43c77a95e::t_9001c3c6a2b88b 1-9,12-109
+  s_feeac43c77a95e::t_6d6d9744bb4a9f 10-11
+src/app/retro/[id]/lobby/page.tsx
+  s_feeac43c77a95e::t_4580264f9c61d5 104-106
+src/app/retro/[id]/layout.tsx
+  s_feeac43c77a95e::t_aa126005a3fa91 6,26-67
+  s_feeac43c77a95e::t_a259153c6c4eba 5,7-8
+  s_feeac43c77a95e::t_3bae757cba4cf2 68-74
+  s_feeac43c77a95e::t_542b9bbde53ab5 100-116
+  s_feeac43c77a95e::t_bf68ec02872c3c 123
+src/types/supabase.ts
+  s_feeac43c77a95e::t_82d6a4455d9337 365-373,384-388
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "64eac828a9e0007aca27a8be7992a5b0189ae338",
+  "prompts": {},
+  "sessions": {
+    "s_421834363df7a8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f3b19acf-f05b-4a3e-94c9-3c7c5db81900",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    },
+    "s_feeac43c77a95e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "7bc4c749-b7dc-4f5b-b412-2b163ddcfcd5",
+        "model": "gpt-4.1"
+      },
+      "human_author": "Abdullah Akkoloğlu <abdullah.akkologlu@atmosware.turkcell.com.tr>"
+    }
+  }
+}
