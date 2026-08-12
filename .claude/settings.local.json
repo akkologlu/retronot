@@ -3,7 +3,13 @@
     "allow": [
       "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
       "mcp__plugin_context-mode_context-mode__ctx_search",
-      "mcp__plugin_context-mode_context-mode__ctx_execute"
+      "mcp__plugin_context-mode_context-mode__ctx_execute",
+      "Bash(git -C \"D:\\\\Dev\\\\retronot\" log --all --oneline -- .env.example .env .env.local)",
+      "Bash(npx supabase *)",
+      "Bash(npm run *)",
+      "Read(//tmp/**)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)"
     ]
   }
 }

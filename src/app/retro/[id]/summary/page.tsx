@@ -15,6 +15,7 @@ export default function SummaryPage() {
   const router = useRouter()
   const [isExporting, setIsExporting] = useState(false)
   const [isSavingImage, setIsSavingImage] = useState(false)
+  const [isCapturing, setIsCapturing] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   // Process data to display in columns
@@ -78,6 +79,13 @@ export default function SummaryPage() {
     return items.sort((a, b) => b.voteCount - a.voteCount)
   }, [cards, votes, groups])
 
+  // Expand the (normally scroll-clipped) columns to their natural full size
+  // so the export captures everything, not just what fits on screen.
+  const expandForCapture = () => new Promise<void>(resolve => {
+    setIsCapturing(true)
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+  })
+
   const handleExportPDF = async () => {
     if (!contentRef.current) return
     setIsExporting(true)
@@ -88,8 +96,7 @@ export default function SummaryPage() {
         import('jspdf'),
       ])
 
-      // Add a small delay to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await expandForCapture()
 
       const dataUrl = await toPng(contentRef.current, {
         cacheBust: true,
@@ -111,6 +118,7 @@ export default function SummaryPage() {
     } catch {
       toast.error('Failed to export PDF')
     } finally {
+      setIsCapturing(false)
       setIsExporting(false)
     }
   }
@@ -122,8 +130,7 @@ export default function SummaryPage() {
     try {
       const { toPng } = await import('html-to-image')
 
-      // Add a small delay to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await expandForCapture()
 
       const dataUrl = await toPng(contentRef.current, {
         cacheBust: true,
@@ -140,6 +147,7 @@ export default function SummaryPage() {
     } catch {
       toast.error('Failed to save image')
     } finally {
+      setIsCapturing(false)
       setIsSavingImage(false)
     }
   }
@@ -174,20 +182,20 @@ export default function SummaryPage() {
       </div>
 
       <div className="flex-1 overflow-x-auto">
-        <div ref={contentRef} className="flex h-full gap-6 min-w-max w-fit pb-4 p-1"> {/* Added p-1 to prevent shadow clipping */}
+        <div ref={contentRef} className={`flex gap-6 min-w-max w-fit pb-4 p-1 ${isCapturing ? 'h-auto' : 'h-full'}`}> {/* Added p-1 to prevent shadow clipping */}
           {columns.map((column) => {
             const columnItems = processedItems.filter(item => item.column === column.id)
-            
+
             return (
-              <div key={column.id} className="w-80 flex flex-col h-full bg-muted/30 rounded-lg p-4 border">
-                <div 
+              <div key={column.id} className={`w-80 flex flex-col bg-muted/30 rounded-lg p-4 border ${isCapturing ? 'h-auto' : 'h-full'}`}>
+                <div
                   className="font-semibold mb-4 px-2 py-1 rounded w-fit"
                   style={{ backgroundColor: `${column.color}20`, color: column.color }}
                 >
                   {column.name}
                 </div>
-                
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+
+                <div className={`flex-1 space-y-4 overflow-x-hidden pr-2 ${isCapturing ? 'overflow-visible h-auto' : 'overflow-y-auto thin-scrollbar'}`}>
                   {columnItems.map((item) => {
                     // Get action items for this item (group or single)
                     const itemCardIds = new Set(item.cards.map(c => c.id))
@@ -211,7 +219,7 @@ export default function SummaryPage() {
                           {/* Content */}
                           <div className="space-y-2">
                             {item.cards.map(card => (
-                              <p key={card.id} className="text-sm leading-relaxed">
+                              <p key={card.id} className="text-sm leading-relaxed break-words">
                                 {card.content}
                               </p>
                             ))}
@@ -226,7 +234,7 @@ export default function SummaryPage() {
                               </div>
                               <ul className="space-y-1">
                                 {itemActionItems.map(ai => (
-                                  <li key={ai.id} className="text-xs bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100 p-2 rounded border border-green-100 dark:border-green-900">
+                                  <li key={ai.id} className="text-xs bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100 p-2 rounded border border-green-100 dark:border-green-900 break-words">
                                     {ai.content}
                                   </li>
                                 ))}

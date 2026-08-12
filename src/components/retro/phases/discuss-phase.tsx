@@ -255,13 +255,13 @@ export default function DiscussPhase() {
   const participantOptions = (participants as ParticipantWithUser[]).filter(p => p.user_id)
 
   return (
-    <div className="flex h-full flex-col items-center justify-center p-6 max-w-4xl mx-auto w-full">
-      <div className="flex items-center justify-between w-full mb-8">
+    <div className="flex h-full flex-col items-center p-6 max-w-4xl mx-auto w-full">
+      <div className="flex items-center justify-between w-full mb-8 shrink-0">
         <h2 className="text-3xl font-bold">Discussion Phase</h2>
         <div className="text-muted-foreground">Topic {safeActiveIndex + 1} of {discussionItems.length}</div>
       </div>
 
-      <div className="w-full max-w-2xl overflow-hidden">
+      <div className="w-full max-w-2xl flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         <AnimatePresence mode="wait" initial={false} custom={directionRef.current}>
           <motion.div
             key={currentCardId ?? 'none'}
@@ -328,7 +328,7 @@ export default function DiscussPhase() {
         </AnimatePresence>
       </div>
 
-      <div className="w-full max-w-2xl mt-8">
+      <div className="w-full max-w-2xl mt-8 shrink-0">
         <h3 className="text-xl font-semibold mb-4">Action Items</h3>
         <div className="space-y-2 mb-4">
           {relevantActionItems.map(item => (
@@ -411,7 +411,7 @@ export default function DiscussPhase() {
       </div>
 
       {isModerator && (
-        <div className="flex items-center gap-4 mt-8">
+        <div className="flex items-center gap-4 mt-8 shrink-0">
           <Button variant="outline" size="lg" onClick={handlePrevious} disabled={safeActiveIndex === 0 || isUpdating} className="w-32">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Previous
@@ -431,7 +431,7 @@ export default function DiscussPhase() {
       )}
 
       {!isModerator && (
-        <div className="mt-8 text-muted-foreground animate-pulse">
+        <div className="mt-8 text-muted-foreground animate-pulse shrink-0">
           Waiting for moderator to navigate...
         </div>
       )}

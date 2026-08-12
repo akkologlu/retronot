@@ -20,6 +20,13 @@ type CardRow = Database['public']['Tables']['retro_cards']['Row']
 
 const CARD_MAX = 1000
 
+// Realtime broadcast is not RLS-scoped, so card content must never be sent
+// over it during the write phase — only metadata, to keep other users' cards
+// anonymous until the phase (or a reveal) actually grants access via RLS.
+function withoutContent(card: CardRow): CardRow {
+  return { ...card, content: '' }
+}
+
 export default function WritePhase() {
   const { retro, cards, participants, drafts, realtimeChannel } = useRetroStore()
   const [newCardContent, setNewCardContent] = useState('')
@@ -79,10 +86,11 @@ export default function WritePhase() {
     handleTyping(null)
 
     // Broadcast optimistic card immediately so other users see it instantly
+    // (content stripped — write-phase cards must stay anonymous over the wire)
     realtimeChannel?.send({
       type: 'broadcast',
       event: 'card_sync',
-      payload: { action: 'insert', card: optimisticCard },
+      payload: { action: 'insert', card: withoutContent(optimisticCard) },
     })
 
     const result = await createCard(retro.id, parsed.data, column)
@@ -103,7 +111,7 @@ export default function WritePhase() {
       realtimeChannel?.send({
         type: 'broadcast',
         event: 'card_sync',
-        payload: { action: 'replace', oldId: tempId, card: result.card },
+        payload: { action: 'replace', oldId: tempId, card: withoutContent(result.card) },
       })
     }
   }
@@ -129,7 +137,7 @@ export default function WritePhase() {
       realtimeChannel?.send({
         type: 'broadcast',
         event: 'card_sync',
-        payload: { action: 'update', card: updatedCard },
+        payload: { action: 'update', card: withoutContent(updatedCard) },
       })
     }
   }
