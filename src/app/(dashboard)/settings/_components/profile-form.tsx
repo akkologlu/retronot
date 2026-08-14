@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,26 +11,22 @@ import { toast } from 'sonner'
 import { updateProfile } from '@/app/actions/user'
 import AvatarPickerDialog from './avatar-picker-dialog'
 
-// Supabase's storage CDN can briefly fail to serve a freshly uploaded object
-// right after an upsert overwrite. We don't want to hammer it, so this checks
-// a few times with backoff and gives up quietly if it never comes up — the
-// local preview stays on screen either way, and the correct URL is already
-// persisted to the DB for the next real page load to pick up.
-function tryLoadImage(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new window.Image()
-    img.onload = () => resolve(true)
-    img.onerror = () => resolve(false)
-    img.src = url
-  })
-}
-
-async function waitUntilAvatarReady(url: string, attempts = 4, delayMs = 1000): Promise<boolean> {
+// Supabase's storage CDN returns 503 when the request carries Cloudflare's
+// `__cf_bm` cookie (it's SameSite=None, so the browser attaches it to any
+// cross-site <img> request once it's been set). A plain `<img src>` to a
+// Supabase storage URL is therefore unreliable. Fetching the bytes ourselves
+// with credentials omitted sidesteps it entirely and we render from a blob.
+async function fetchAsObjectUrl(url: string, attempts = 3, delayMs = 500): Promise<string | null> {
   for (let i = 0; i < attempts; i++) {
-    if (await tryLoadImage(url)) return true
+    try {
+      const res = await fetch(url, { credentials: 'omit', cache: 'no-store' })
+      if (res.ok) return URL.createObjectURL(await res.blob())
+    } catch {
+      // network hiccup, retry
+    }
     if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs))
   }
-  return false
+  return null
 }
 
 interface ProfileFormProps {
@@ -41,13 +37,47 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ userId, email, initialName, initialAvatarUrl }: ProfileFormProps) {
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
   const supabase = createClient()
-  const previewUrlRef = useRef<string | null>(null)
+  const objectUrlRef = useRef<string | null>(null)
+
+  const setDisplayUrl = (url: string | null, isObjectUrl = false) => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current)
+      objectUrlRef.current = null
+    }
+    if (isObjectUrl && url) objectUrlRef.current = url
+    setAvatarUrl(url)
+  }
+
+  // Whenever the server-provided avatar URL changes (initial load, or after
+  // router.refresh() picks up a newly saved one), resolve it through the
+  // cookieless fetch path before displaying it.
+  useEffect(() => {
+    let cancelled = false
+    if (!initialAvatarUrl) {
+      setDisplayUrl(null)
+      return
+    }
+    fetchAsObjectUrl(initialAvatarUrl).then((objectUrl) => {
+      if (!cancelled && objectUrl) setDisplayUrl(objectUrl, true)
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialAvatarUrl])
+
+  useEffect(
+    () => () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
+    },
+    []
+  )
 
   const persistAvatarUrl = async (url: string) => {
     await Promise.all([
@@ -57,18 +87,12 @@ export default function ProfileForm({ userId, email, initialName, initialAvatarU
     router.refresh()
   }
 
-  const clearPreview = () => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-      previewUrlRef.current = null
-    }
-  }
-
   const handleSelectPreset = async (url: string) => {
     setUploading(true)
     try {
       await persistAvatarUrl(url)
-      setAvatarUrl(url)
+      const objectUrl = await fetchAsObjectUrl(url)
+      setDisplayUrl(objectUrl ?? url, !!objectUrl)
       toast.success('Avatar updated')
     } catch {
       toast.error('Failed to update avatar')
@@ -83,13 +107,9 @@ export default function ProfileForm({ userId, email, initialName, initialAvatarU
       return
     }
 
-    // Show the picked file immediately — Supabase's CDN can take a few
-    // seconds to reliably serve a freshly uploaded object, so we don't want
-    // the user staring at the fallback initial in the meantime.
-    clearPreview()
-    const preview = URL.createObjectURL(file)
-    previewUrlRef.current = preview
-    setAvatarUrl(preview)
+    // Show the picked file immediately — the remote URL still has to clear
+    // the fetch above, so this is what makes the change feel instant.
+    setDisplayUrl(URL.createObjectURL(file), true)
 
     setUploading(true)
     try {
@@ -106,19 +126,12 @@ export default function ProfileForm({ userId, email, initialName, initialAvatarU
       const url = `${publicUrl}?t=${Date.now()}`
       await persistAvatarUrl(url)
       toast.success('Avatar updated')
-
-      // Best-effort: swap to the real remote URL once it's confirmed
-      // loadable, so we're not stuck on a blob: URL forever. If it's still
-      // not ready, keep showing the preview — the saved DB URL will render
-      // fine on the next normal page load.
-      if (await waitUntilAvatarReady(url)) {
-        clearPreview()
-        setAvatarUrl(url)
-      }
+      // router.refresh() will update initialAvatarUrl, which re-triggers the
+      // effect above and swaps the preview for the real fetched image.
     } catch {
       toast.error('Failed to upload avatar')
-      clearPreview()
-      setAvatarUrl(initialAvatarUrl)
+      const fallback = initialAvatarUrl ? await fetchAsObjectUrl(initialAvatarUrl) : null
+      setDisplayUrl(fallback, !!fallback)
     } finally {
       setUploading(false)
     }
