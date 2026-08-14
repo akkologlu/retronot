@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, FileStack, Menu, X, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
 import {
   Dialog,
   DialogContent,
@@ -90,7 +90,7 @@ export default function Sidebar({ user, displayName, avatarUrl }: SidebarProps) 
       <div className="mt-auto border-t pt-4">
         <div className="mb-4 flex items-center gap-3 px-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={avatarUrl ?? undefined} className="object-cover" />
+            <RemoteAvatarImage src={avatarUrl ?? undefined} className="object-cover" />
             <AvatarFallback>{(displayName || user.email || 'U')[0].toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden">

@@ -10,7 +10,7 @@ import { ChevronLeft, ChevronRight, CheckCircle, Plus, Trash2, Calendar, User, E
 import { toast } from 'sonner'
 import { advancePhase, setDiscussionCard, revealCardAuthor } from '@/app/actions/retro'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
 import { draftActionItem } from '@/lib/ai'
 import { Database } from '@/types/supabase'
 
@@ -291,7 +291,7 @@ export default function DiscussPhase() {
                         {card.author_revealed && authorUser && (
                           <div className="flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5">
                             <Avatar className="h-4 w-4">
-                              <AvatarImage src={authorUser.avatarUrl ?? undefined} />
+                              <RemoteAvatarImage src={authorUser.avatarUrl ?? undefined} />
                               <AvatarFallback className="text-[10px]">{authorInitial}</AvatarFallback>
                             </Avatar>
                             <span className="text-xs text-amber-700 font-medium">{authorUser.fullName ?? 'Anonymous'}</span>

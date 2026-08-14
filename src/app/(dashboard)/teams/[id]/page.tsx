@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
 import { ArrowLeft, Users, Clock, CheckCircle, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import InviteCopyButton from '../_components/invite-copy-button'
@@ -252,7 +252,7 @@ export default async function TeamDetailPage({ params }: PageProps) {
                     className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent transition-colors"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={u?.avatar_url ?? undefined} className="object-cover" />
+                      <RemoteAvatarImage src={u?.avatar_url ?? undefined} className="object-cover" />
                       <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useRetroStore } from '@/lib/store/retro-store'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -97,7 +97,7 @@ export function ParticipantsSidebar() {
               >
                 <div className="relative">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={avatarUrl || ''} />
+                    <RemoteAvatarImage src={avatarUrl || undefined} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
                   {participant.online && (
