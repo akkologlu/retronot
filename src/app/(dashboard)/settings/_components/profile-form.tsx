@@ -65,7 +65,7 @@ export default function ProfileForm({ userId, email, initialName, initialAvatarU
       if (uploadError) throw uploadError
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-      await saveAvatarUrl(publicUrl)
+      await saveAvatarUrl(`${publicUrl}?t=${Date.now()}`)
     } catch {
       toast.error('Failed to upload avatar')
     } finally {
