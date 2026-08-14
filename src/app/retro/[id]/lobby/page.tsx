@@ -27,6 +27,7 @@ interface PrevItem {
   id: string
   content: string
   assigned_to_name?: string | null
+  card_content?: string | null
 }
 
 export default function LobbyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -62,18 +63,21 @@ export default function LobbyPage({ params }: { params: Promise<{ id: string }> 
 
       const { data: items } = await supabase
         .from('action_items')
-        .select('id, content, users!action_items_assigned_to_user_id_fkey(full_name, email)')
+        .select('id, content, users!action_items_assigned_to_user_id_fkey(full_name, email), retro_cards(content)')
         .eq('retro_id', prevRetro.id)
         .eq('completed', false)
         .order('created_at', { ascending: true })
 
       if (items) {
         setPrevItems(items.map(i => {
-          const users = (i as Record<string, unknown>).users as { full_name?: string; email?: string } | null
+          const row = i as Record<string, unknown>
+          const users = row.users as { full_name?: string; email?: string } | null
+          const card = row.retro_cards as { content?: string } | null
           return {
             id: i.id,
             content: i.content,
             assigned_to_name: users?.full_name || users?.email || null,
+            card_content: card?.content || null,
           }
         }))
       }

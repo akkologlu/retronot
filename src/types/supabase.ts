@@ -301,6 +301,13 @@ export interface Database {
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "action_items_card_id_fkey";
+            columns: ["card_id"];
+            isOneToOne: false;
+            referencedRelation: "retro_cards";
+            referencedColumns: ["id"];
+          },
         ];
       };
       invite_links: {

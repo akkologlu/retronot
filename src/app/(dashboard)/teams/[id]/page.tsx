@@ -88,7 +88,7 @@ export default async function TeamDetailPage({ params }: PageProps) {
   const retroNameMap = new Map(retrosStats.map((r: { id: string; name: string }) => [r.id, r.name]))
 
   // Round 2: action items (needs retro IDs). HEAD queries for accurate counts without fetching all rows.
-  let actionItems: { id: string; content: string; completed: boolean; retro_id: string; assigned_to_user_id: string | null; users: { full_name: string | null; email: string } | null }[] = []
+  let actionItems: { id: string; content: string; completed: boolean; retro_id: string; card_id: string | null; assigned_to_user_id: string | null; users: { full_name: string | null; email: string } | null; retro_cards: { content: string } | null }[] = []
   let totalActions = 0
   let completedActions = 0
 
@@ -96,7 +96,7 @@ export default async function TeamDetailPage({ params }: PageProps) {
     const [displayResult, totalCountResult, completedCountResult] = await Promise.all([
       supabase
         .from('action_items')
-        .select('id, content, completed, created_at, retro_id, assigned_to_user_id, users!action_items_assigned_to_user_id_fkey(full_name, email)')
+        .select('id, content, completed, created_at, retro_id, card_id, assigned_to_user_id, users!action_items_assigned_to_user_id_fkey(full_name, email), retro_cards(content)')
         .in('retro_id', retroIds)
         .order('completed', { ascending: true })
         .order('created_at', { ascending: false })
@@ -406,24 +406,34 @@ export default async function TeamDetailPage({ params }: PageProps) {
                           assigned_to_user_id: string | null
                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           users: any
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          retro_cards: any
                         }) => {
                           const assignee = item.users
                           const assigneeName = assignee?.full_name || assignee?.email || null
+                          const cardContent = item.retro_cards?.content || null
                           return (
-                            <div key={item.id} className="flex items-center gap-3 px-3 py-2.5">
+                            <div key={item.id} className="flex items-start gap-3 px-3 py-2.5">
                               <ActionItemCheckbox itemId={item.id} completed={item.completed} />
-                              <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
-                                <span className={cn(
-                                  'text-sm',
-                                  item.completed && 'line-through text-muted-foreground'
-                                )}>
-                                  {item.content}
-                                </span>
-                                {assigneeName && (
-                                  <span className="text-xs text-muted-foreground shrink-0">
-                                    → {assigneeName}
-                                  </span>
+                              <div className="flex-1 min-w-0 space-y-0.5">
+                                {cardContent && (
+                                  <p className="text-xs text-muted-foreground italic truncate" title={cardContent}>
+                                    From: &ldquo;{cardContent}&rdquo;
+                                  </p>
                                 )}
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className={cn(
+                                    'text-sm',
+                                    item.completed && 'line-through text-muted-foreground'
+                                  )}>
+                                    {item.content}
+                                  </span>
+                                  {assigneeName && (
+                                    <span className="text-xs text-muted-foreground shrink-0">
+                                      → {assigneeName}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           )

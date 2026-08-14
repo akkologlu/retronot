@@ -10,6 +10,7 @@ interface ActionItem {
   id: string
   content: string
   assigned_to_name?: string | null
+  card_content?: string | null
 }
 
 interface Props {
@@ -80,12 +81,19 @@ export default function PreviousActionItems({ items, currentRetroId, previousRet
         <div className="space-y-2">
           {pending.map(item => (
             <div key={item.id} className="flex items-start gap-3 rounded-md bg-background border border-border p-3">
-              <p className="flex-1 text-sm text-foreground leading-snug">
-                {item.content}
-                {item.assigned_to_name && (
-                  <span className="ml-2 text-xs text-muted-foreground">→ {item.assigned_to_name}</span>
+              <div className="flex-1 space-y-1">
+                {item.card_content && (
+                  <p className="text-xs text-muted-foreground italic line-clamp-1" title={item.card_content}>
+                    From: &ldquo;{item.card_content}&rdquo;
+                  </p>
                 )}
-              </p>
+                <p className="text-sm text-foreground leading-snug">
+                  {item.content}
+                  {item.assigned_to_name && (
+                    <span className="ml-2 text-xs text-muted-foreground">→ {item.assigned_to_name}</span>
+                  )}
+                </p>
+              </div>
               {isHost && (
                 <div className="flex gap-1 shrink-0">
                   <Button
@@ -139,6 +147,11 @@ export default function PreviousActionItems({ items, currentRetroId, previousRet
                 <span className={state === 'dropped' ? 'line-through opacity-50' : ''}>
                   {item.content}
                 </span>
+                {item.card_content && (
+                  <span className="italic opacity-60 truncate max-w-[16rem]" title={item.card_content}>
+                    (&ldquo;{item.card_content}&rdquo;)
+                  </span>
+                )}
                 <span className="opacity-60">
                   {state === 'done' ? '· done' : state === 'carried' ? '· carried' : '· dropped'}
                 </span>
