@@ -38,11 +38,22 @@ export default function PhaseTimer({ durationMinutes, startedAt, isHost, retroId
         beeped.current[beepKey] = true
         try {
           const ctx = new AudioContext()
-          const osc = ctx.createOscillator()
-          osc.connect(ctx.destination)
-          osc.frequency.value = 880
-          osc.start()
-          osc.stop(ctx.currentTime + 0.4)
+          const now = ctx.currentTime
+          const playTone = (freq: number, start: number, duration: number) => {
+            const osc = ctx.createOscillator()
+            const gain = ctx.createGain()
+            osc.type = 'sine'
+            osc.frequency.value = freq
+            gain.gain.setValueAtTime(0, now + start)
+            gain.gain.linearRampToValueAtTime(0.15, now + start + 0.05)
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + start + duration)
+            osc.connect(gain)
+            gain.connect(ctx.destination)
+            osc.start(now + start)
+            osc.stop(now + start + duration + 0.05)
+          }
+          playTone(659.25, 0, 0.35)
+          playTone(880, 0.18, 0.45)
         } catch {}
       }
     }

@@ -352,18 +352,6 @@ export default function GroupPhase() {
           <h2 className="text-2xl font-bold">Grouping Phase</h2>
           <div className="flex items-center gap-2">
             <div className="text-sm text-muted-foreground hidden sm:block">Drag cards to group · double-click to rename</div>
-            {isOwner && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAiSuggest}
-                disabled={aiLoading || cards.length === 0}
-                className="gap-1.5"
-              >
-                {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                AI Suggest
-              </Button>
-            )}
             {isOwner && <Button onClick={handleNextPhase} variant="outline" disabled={isAdvancing}>Next Phase</Button>}
           </div>
         </div>

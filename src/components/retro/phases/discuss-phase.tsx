@@ -369,14 +369,6 @@ export default function DiscussPhase() {
               onKeyDown={(e) => e.key === 'Enter' && handleAddActionItem()}
               className="flex-1"
             />
-            <Button
-              variant="outline"
-              onClick={handleDraftAction}
-              disabled={isDraftingAction || !activeItem}
-              title="AI draft action item"
-            >
-              {isDraftingAction ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            </Button>
             <Button onClick={handleAddActionItem} disabled={!newActionItem.trim() || isAddingItem}>
               <Plus className="mr-2 h-4 w-4" />
               Add
