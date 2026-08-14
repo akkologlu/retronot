@@ -4,9 +4,20 @@ import { useEffect, useRef, useState } from 'react'
 
 // Supabase's storage CDN returns 503 when the request carries Cloudflare's
 // `__cf_bm` cookie (it's SameSite=None, so the browser attaches it to any
-// cross-site <img> request once it's been set anywhere). A plain `<img src>`
-// pointed straight at a Supabase storage URL is therefore unreliable.
-// Fetching the bytes ourselves with credentials omitted sidesteps it.
+// cross-site <img> request once it's been set anywhere), and our CSP's
+// img-src doesn't allowlist the Supabase domain in the first place — only
+// 'self', data:, blob: and dicebear are allowed. So a plain `<img src>`
+// pointed at a Supabase storage URL never works. Fetching the bytes
+// ourselves (allowed by connect-src) and rendering from a blob: URL
+// sidesteps both problems. Other origins (e.g. the dicebear presets) are
+// already allowlisted in img-src and have no cookie issue, so they're left
+// alone — fetching them would only fail: they're not in connect-src.
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+function needsCookielessFetch(url: string): boolean {
+  return !!SUPABASE_URL && url.startsWith(SUPABASE_URL)
+}
+
 async function fetchAsObjectUrl(url: string, attempts = 3, delayMs = 500): Promise<string | null> {
   for (let i = 0; i < attempts; i++) {
     try {
@@ -21,37 +32,23 @@ async function fetchAsObjectUrl(url: string, attempts = 3, delayMs = 500): Promi
 }
 
 /**
- * Resolves a remote avatar URL to a blob: URL that's safe to hand to <img>,
- * bypassing the cookie issue above. blob:/data: URLs (e.g. a local upload
- * preview) pass through unchanged.
+ * Resolves an avatar URL to something safe for <img src>, re-resolving
+ * whenever the URL changes. blob:/data: URLs and non-Supabase origins
+ * (e.g. dicebear) pass through unchanged and don't need a fetch at all.
  */
 export function useResolvedAvatarUrl(url: string | null | undefined): string | null {
-  const [resolved, setResolved] = useState<string | null>(null)
+  const [resolved, setResolved] = useState<{ forUrl: string; blobUrl: string } | null>(null)
   const objectUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
+    if (!url || !needsCookielessFetch(url)) return
+
     let cancelled = false
-
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current)
-      objectUrlRef.current = null
-    }
-
-    if (!url) {
-      setResolved(null)
-      return
-    }
-
-    if (url.startsWith('blob:') || url.startsWith('data:')) {
-      setResolved(url)
-      return
-    }
-
-    setResolved(null)
     fetchAsObjectUrl(url).then((objectUrl) => {
       if (cancelled || !objectUrl) return
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
       objectUrlRef.current = objectUrl
-      setResolved(objectUrl)
+      setResolved({ forUrl: url, blobUrl: objectUrl })
     })
 
     return () => {
@@ -66,5 +63,7 @@ export function useResolvedAvatarUrl(url: string | null | undefined): string | n
     []
   )
 
-  return resolved
+  if (!url) return null
+  if (!needsCookielessFetch(url)) return url
+  return resolved?.forUrl === url ? resolved.blobUrl : null
 }
