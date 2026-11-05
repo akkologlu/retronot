@@ -33,7 +33,7 @@ test.describe('Auth flow', () => {
   })
 
   test('unauthenticated user redirected from dashboard', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/dashboard')
     await expect(page).toHaveURL(/\/login/)
   })
 
@@ -42,8 +42,8 @@ test.describe('Auth flow', () => {
     await page.getByLabel('Email').fill(TEST_EMAIL)
     await page.getByLabel('Password').fill(TEST_PASSWORD)
     await page.getByRole('button', { name: 'Sign In' }).click()
-    await expect(page).toHaveURL('/', { timeout: 10000 })
-    await expect(page.getByText('Dashboard')).toBeVisible()
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 })
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
   })
 
   test('sign out returns to login', async ({ page }) => {
@@ -51,9 +51,10 @@ test.describe('Auth flow', () => {
     await page.getByLabel('Email').fill(TEST_EMAIL)
     await page.getByLabel('Password').fill(TEST_PASSWORD)
     await page.getByRole('button', { name: 'Sign In' }).click()
-    await expect(page).toHaveURL('/', { timeout: 10000 })
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 })
 
     await page.getByRole('button', { name: 'Sign Out' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Sign Out' }).click()
     await expect(page).toHaveURL(/\/login/, { timeout: 5000 })
   })
 })

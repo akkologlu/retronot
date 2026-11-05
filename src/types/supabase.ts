@@ -97,7 +97,7 @@ export interface Database {
           name: string;
           template_type: string;
           config: Json;
-          phase: "lobby" | "write" | "group" | "vote" | "discuss" | "summary";
+          phase: "lobby" | "review" | "write" | "group" | "vote" | "discuss" | "summary";
           created_by: string | null;
           moderator_id: string | null;
           created_at: string;
@@ -111,7 +111,7 @@ export interface Database {
           name: string;
           template_type: string;
           config?: Json;
-          phase?: "lobby" | "write" | "group" | "vote" | "discuss" | "summary";
+          phase?: "lobby" | "review" | "write" | "group" | "vote" | "discuss" | "summary";
           created_by?: string | null;
           moderator_id?: string | null;
           created_at?: string;
@@ -125,7 +125,7 @@ export interface Database {
           name?: string;
           template_type?: string;
           config?: Json;
-          phase?: "lobby" | "write" | "group" | "vote" | "discuss" | "summary";
+          phase?: "lobby" | "review" | "write" | "group" | "vote" | "discuss" | "summary";
           created_by?: string | null;
           moderator_id?: string | null;
           created_at?: string;

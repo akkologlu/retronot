@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ChevronLeft, ChevronRight, CheckCircle, Plus, Trash2, Calendar, User, EyeOff, Sparkles, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { advancePhase, setDiscussionCard, revealCardAuthor } from '@/app/actions/retro'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
 import { draftActionItem } from '@/lib/ai'
 import { Database } from '@/types/supabase'
@@ -19,7 +19,7 @@ type ParticipantWithUser = Database['public']['Tables']['retro_participants']['R
 }
 
 export default function DiscussPhase() {
-  const { retro, cards, votes, actionItems, groups, addActionItem, removeActionItem, participants, participantUsers, updateCard, setRetro, realtimeChannel } = useRetroStore()
+  const { retro, cards, votes, actionItems, groups, addActionItem, removeActionItem, participants, participantUsers, updateCard, setLocalDiscussionCard, realtimeChannel } = useRetroStore()
   const [isUpdating, setIsUpdating] = useState(false)
   const [revealingCardId, setRevealingCardId] = useState<string | null>(null)
   const [isDraftingAction, setIsDraftingAction] = useState(false)
@@ -27,10 +27,8 @@ export default function DiscussPhase() {
   const [newActionItem, setNewActionItem] = useState('')
   const [assigneeId, setAssigneeId] = useState<string>('')
   const [dueDate, setDueDate] = useState<string>('')
-  const directionRef = useRef(1)
   const supabase = createClient()
   const initializedRef = useRef(false)
-  const prevIndexRef = useRef(0)
 
   const liveItems = useMemo(() => {
     const items: { type: 'single' | 'group'; id: string; cards: typeof cards; voteCount: number }[] = []
@@ -74,11 +72,6 @@ export default function DiscussPhase() {
   const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex
   const activeItem = discussionItems[safeActiveIndex]
 
-  if (safeActiveIndex !== prevIndexRef.current) {
-    directionRef.current = safeActiveIndex > prevIndexRef.current ? 1 : -1
-    prevIndexRef.current = safeActiveIndex
-  }
-
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -103,13 +96,13 @@ export default function DiscussPhase() {
     setIsUpdating(true)
     const prevCardId = retro.current_discussion_card_id
     // Optimistic update for moderator + broadcast for instant propagation to other clients
-    setRetro({ ...retro, current_discussion_card_id: cardId })
+    setLocalDiscussionCard(cardId)
     realtimeChannel?.send({ type: 'broadcast', event: 'discussion_card', payload: { card_id: cardId } })
     try {
       const result = await setDiscussionCard(retro.id, cardId)
       if (result?.error) throw new Error(result.error)
     } catch {
-      setRetro({ ...retro, current_discussion_card_id: prevCardId })
+      setLocalDiscussionCard(prevCardId)
       realtimeChannel?.send({ type: 'broadcast', event: 'discussion_card', payload: { card_id: prevCardId } })
       toast.error('Failed to update discussion card')
     } finally {
@@ -262,70 +255,61 @@ export default function DiscussPhase() {
       </div>
 
       <div className="w-full max-w-2xl flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-        <AnimatePresence mode="wait" initial={false} custom={directionRef.current}>
-          <motion.div
-            key={currentCardId ?? 'none'}
-            custom={directionRef.current}
-            variants={{
-              enter: (d: number) => ({ x: d * 60, opacity: 0 }),
-              center: { x: 0, opacity: 1 },
-              exit: (d: number) => ({ x: d * -60, opacity: 0 }),
-            }}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className="space-y-4"
-          >
-            {activeItem.cards.map((card) => {
-              const cardVoteCount = votes.filter(v => v.card_id === card.id).length
-              const isCardAuthor = userId !== null && card.author_id !== null && card.author_id === userId
-              const authorUser = card.author_revealed && card.author_id ? participantUsers[card.author_id] : null
-              const authorInitial = authorUser?.fullName?.[0]?.toUpperCase() ?? '?'
-              return (
-                <Card key={card.id} className="shadow-lg border-2 border-primary/20">
-                  <CardHeader className="pb-2 border-b">
-                    <CardTitle className="text-xl flex justify-between items-center gap-2">
-                      <span className="text-sm font-normal text-muted-foreground">{card.column_name}</span>
-                      <div className="flex items-center gap-2 ml-auto">
-                        {card.author_revealed && authorUser && (
-                          <div className="flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5">
-                            <Avatar className="h-4 w-4">
-                              <RemoteAvatarImage src={authorUser.avatarUrl ?? undefined} />
-                              <AvatarFallback className="text-[10px]">{authorInitial}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs text-amber-700 font-medium">{authorUser.fullName ?? 'Anonymous'}</span>
-                          </div>
-                        )}
-                        {isCardAuthor && !card.author_revealed && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                            disabled={revealingCardId === card.id}
-                            onClick={() => handleRevealAuthor(card.id)}
-                          >
-                            <EyeOff className="h-3 w-3 mr-1" />
-                            Reveal as me
-                          </Button>
-                        )}
-                        <div className="flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
-                          <span className="text-xs font-medium text-primary">{cardVoteCount} votes</span>
+        <motion.div
+          key={activeItem.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="space-y-4"
+        >
+          {activeItem.cards.map((card) => {
+            const cardVoteCount = votes.filter(v => v.card_id === card.id).length
+            const isCardAuthor = userId !== null && card.author_id !== null && card.author_id === userId
+            const authorUser = card.author_revealed && card.author_id ? participantUsers[card.author_id] : null
+            const authorInitial = authorUser?.fullName?.[0]?.toUpperCase() ?? '?'
+            return (
+              <Card key={card.id} className="shadow-lg border-2 border-primary/20">
+                <CardHeader className="pb-2 border-b">
+                  <CardTitle className="text-xl flex justify-between items-center gap-2">
+                    <span className="text-sm font-normal text-muted-foreground">{card.column_name}</span>
+                    <div className="flex items-center gap-2 ml-auto">
+                      {card.author_revealed && authorUser && (
+                        <div className="flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5">
+                          <Avatar className="h-4 w-4">
+                            <RemoteAvatarImage src={authorUser.avatarUrl ?? undefined} />
+                            <AvatarFallback className="text-[10px]">{authorInitial}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-amber-700 font-medium">{authorUser.fullName ?? 'Anonymous'}</span>
                         </div>
+                      )}
+                      {isCardAuthor && !card.author_revealed && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                          disabled={revealingCardId === card.id}
+                          onClick={() => handleRevealAuthor(card.id)}
+                        >
+                          <EyeOff className="h-3 w-3 mr-1" />
+                          Reveal as me
+                        </Button>
+                      )}
+                      <div className="flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-primary">{cardVoteCount} votes</span>
                       </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <p className="text-2xl font-medium leading-relaxed">{card.content}</p>
-                  </CardContent>
-                </Card>
-              )
-            })}
-            {activeItem.type === 'group' && (
-              <div className="text-center text-sm text-muted-foreground mt-2">Group Total: {activeItem.voteCount} votes</div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <p className="text-2xl font-medium leading-relaxed">{card.content}</p>
+                </CardContent>
+              </Card>
+            )
+          })}
+          {activeItem.type === 'group' && (
+            <div className="text-center text-sm text-muted-foreground mt-2">Group Total: {activeItem.voteCount} votes</div>
+          )}
+        </motion.div>
       </div>
 
       <div className="w-full max-w-2xl mt-8 shrink-0">
@@ -350,9 +334,11 @@ export default function DiscussPhase() {
                   )}
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteActionItem(item.id)} aria-label="Delete action item">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {isModerator && (
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteActionItem(item.id)} aria-label="Delete action item">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ))}
           {relevantActionItems.length === 0 && (
@@ -360,46 +346,48 @@ export default function DiscussPhase() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Add an action item..."
-              value={newActionItem}
-              onChange={(e) => setNewActionItem(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddActionItem()}
-              className="flex-1"
-            />
-            <Button onClick={handleAddActionItem} disabled={!newActionItem.trim() || isAddingItem}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add
-            </Button>
+        {isModerator && (
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add an action item..."
+                value={newActionItem}
+                onChange={(e) => setNewActionItem(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddActionItem()}
+                className="flex-1"
+              />
+              <Button onClick={handleAddActionItem} disabled={!newActionItem.trim() || isAddingItem}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <label className="sr-only" htmlFor="assignee-select">Assign to</label>
+              <select
+                id="assignee-select"
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="">Assign to (optional)</option>
+                {participantOptions.map(p => (
+                  <option key={p.id} value={p.user_id!}>
+                    {p.users?.full_name || p.users?.email || p.user_id}
+                  </option>
+                ))}
+              </select>
+              <label className="sr-only" htmlFor="due-date-input">Due date</label>
+              <input
+                id="due-date-input"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                aria-label="Due date"
+              />
+            </div>
           </div>
-          <div className="flex gap-2">
-            <label className="sr-only" htmlFor="assignee-select">Assign to</label>
-            <select
-              id="assignee-select"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-              className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              <option value="">Assign to (optional)</option>
-              {participantOptions.map(p => (
-                <option key={p.id} value={p.user_id!}>
-                  {p.users?.full_name || p.users?.email || p.user_id}
-                </option>
-              ))}
-            </select>
-            <label className="sr-only" htmlFor="due-date-input">Due date</label>
-            <input
-              id="due-date-input"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              aria-label="Due date"
-            />
-          </div>
-        </div>
+        )}
       </div>
 
       {isModerator && (

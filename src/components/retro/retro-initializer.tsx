@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useRetroStore } from '@/lib/store/retro-store'
 import { useRetroRealtime } from '@/hooks/use-retro-realtime'
+import { useBlockBackNavigation } from '@/hooks/use-block-back-navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
 
@@ -83,22 +84,35 @@ export default function RetroInitializer({
   // Handle Phase Redirection
   const { retro: currentRetro } = useRetroStore()
   const router = useRouter()
+  const pathname = usePathname()
+  const previousPhaseRef = useRef<string | null>(null)
 
+  const currentPhase = currentRetro?.phase
+  useBlockBackNavigation(
+    !!currentPhase && currentPhase !== 'lobby' && currentPhase !== 'summary' && pathname.includes('/board')
+  )
+
+  // The URL always follows the phase. Using replace keeps past phases out of history.
   useEffect(() => {
     if (!currentRetro) return
 
-    const path = window.location.pathname
     const phase = currentRetro.phase
+    const phaseChangedLive = previousPhaseRef.current !== null && previousPhaseRef.current !== phase
+    previousPhaseRef.current = phase
 
-    if (phase === 'lobby' && !path.includes('/lobby')) {
-      router.push(`/retro/${currentRetro.id}/lobby`)
-    } else if (phase === 'summary' && !path.includes('/summary')) {
-      const t = setTimeout(() => router.push(`/retro/${currentRetro.id}/summary`), 2000)
-      return () => clearTimeout(t)
-    } else if (phase !== 'lobby' && phase !== 'summary' && !path.includes('/board')) {
-      router.push(`/retro/${currentRetro.id}/board`)
+    if (phase === 'lobby' && !pathname.includes('/lobby')) {
+      router.replace(`/retro/${currentRetro.id}/lobby`)
+    } else if (phase === 'summary' && !pathname.includes('/summary')) {
+      // Give the "Retro Complete" overlay on the board time to play.
+      if (phaseChangedLive) {
+        const t = setTimeout(() => router.replace(`/retro/${currentRetro.id}/summary`), 2000)
+        return () => clearTimeout(t)
+      }
+      router.replace(`/retro/${currentRetro.id}/summary`)
+    } else if (phase !== 'lobby' && phase !== 'summary' && !pathname.includes('/board')) {
+      router.replace(`/retro/${currentRetro.id}/board`)
     }
-  }, [currentRetro?.phase, currentRetro?.id, router]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentRetro?.phase, currentRetro?.id, pathname, router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }

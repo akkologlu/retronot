@@ -10,9 +10,27 @@ export const RetroConfigSchema = z.object({
     })
     .optional(),
   customColumns: z.array(z.string()).optional(),
+  previousActionReview: z
+    .object({
+      retroName: z.string(),
+      items: z.array(
+        z.object({
+          id: z.string(),
+          content: z.string(),
+          assignedToName: z.string().nullable(),
+          cardContent: z.string().nullable(),
+          status: z.enum(["pending", "done", "carried", "dropped"]),
+        }),
+      ),
+    })
+    .optional(),
 });
 
 export type RetroConfig = z.infer<typeof RetroConfigSchema>;
+export type PreviousActionReview = NonNullable<
+  RetroConfig["previousActionReview"]
+>;
+export type PreviousActionReviewItem = PreviousActionReview["items"][number];
 
 export function parseRetroConfig(config: unknown): RetroConfig {
   const result = RetroConfigSchema.safeParse(config);

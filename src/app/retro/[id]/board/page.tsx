@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRetroStore } from '@/lib/store/retro-store'
+import ReviewPhase from '@/components/retro/phases/review-phase'
 import WritePhase from '@/components/retro/phases/write-phase'
 import GroupPhase from '@/components/retro/phases/group-phase'
 import VotePhase from '@/components/retro/phases/vote-phase'
@@ -10,10 +11,11 @@ import { PhaseTransitionOverlay } from '@/components/retro/phase-transition-over
 import { Loader2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
-type Phase = 'write' | 'group' | 'vote' | 'discuss' | 'summary'
+type Phase = 'review' | 'write' | 'group' | 'vote' | 'discuss' | 'summary'
 
 function PhaseComponent({ phase }: { phase: string }) {
   switch (phase) {
+    case 'review': return <ReviewPhase />
     case 'write': return <WritePhase />
     case 'group': return <GroupPhase />
     case 'vote': return <VotePhase />
@@ -33,8 +35,8 @@ export default function RetroBoardPage() {
     if (!current) return
 
     if (prevPhaseRef.current === null) {
-      // First load: show overlay if entering write phase (lobby → write transition)
-      if (current === 'write') {
+      // First load: show overlay when arriving from the lobby (lobby → review or write)
+      if (current === 'review' || current === 'write') {
         setOverlayPhase(current as Phase) // eslint-disable-line react-hooks/set-state-in-effect
       }
     } else if (prevPhaseRef.current !== current) {

@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { PenLine, Layers, Vote, MessageSquare, Flag } from 'lucide-react'
+import { ClipboardCheck, PenLine, Layers, Vote, MessageSquare, Flag } from 'lucide-react'
 
-type Phase = 'write' | 'group' | 'vote' | 'discuss' | 'summary'
+type Phase = 'review' | 'write' | 'group' | 'vote' | 'discuss' | 'summary'
 
 const PHASE_CONFIG: Record<Phase, {
   icon: React.ReactNode
@@ -13,6 +13,13 @@ const PHASE_CONFIG: Record<Phase, {
   from: string
   gradient: string
 }> = {
+  review: {
+    icon: <ClipboardCheck className="w-16 h-16" />,
+    title: 'Previous Action Items',
+    subtitle: "Let's check what we committed to last time",
+    from: 'Retro is starting!',
+    gradient: 'from-amber-400/20 to-orange-500/20',
+  },
   write: {
     icon: <PenLine className="w-16 h-16" />,
     title: 'Writing Phase',

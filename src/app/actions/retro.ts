@@ -4,13 +4,21 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { Database } from "@/types/supabase";
-import { CreateRetroSchema, parseRetroConfig } from "@/lib/schemas";
+import {
+  CreateRetroSchema,
+  parseRetroConfig,
+  type PreviousActionReview,
+} from "@/lib/schemas";
 import { isValidUUID } from "@/lib/schemas";
 
 type Phase = Database["public"]["Tables"]["retros"]["Row"]["phase"];
+type RetroRow = Database["public"]["Tables"]["retros"]["Row"];
+type ServerSupabase = Awaited<ReturnType<typeof createClient>>;
 
+// lobby moves to "review" instead when the previous retro has open action items.
 const VALID_TRANSITIONS: Partial<Record<Phase, Phase>> = {
   lobby: "write",
+  review: "write",
   write: "group",
   group: "vote",
   vote: "discuss",
@@ -88,6 +96,60 @@ export async function createRetro(formData: FormData) {
   redirect(`/retro/${retro.id}/lobby`);
 }
 
+async function loadPreviousActionReview(
+  supabase: ServerSupabase,
+  retro: RetroRow,
+): Promise<{ review: PreviousActionReview | null; error?: string }> {
+  if (!retro.team_id) return { review: null };
+
+  const { data: prevRetro, error: retroError } = await supabase
+    .from("retros")
+    .select("id, name")
+    .eq("team_id", retro.team_id)
+    .eq("phase", "summary")
+    .neq("id", retro.id)
+    .is("archived_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (retroError) return { review: null, error: retroError.message };
+  if (!prevRetro) return { review: null };
+
+  const { data: items, error: itemsError } = await supabase
+    .from("action_items")
+    .select(
+      "id, content, users!action_items_assigned_to_user_id_fkey(full_name, email), retro_cards(content)",
+    )
+    .eq("retro_id", prevRetro.id)
+    .eq("completed", false)
+    .order("created_at", { ascending: true });
+
+  if (itemsError) return { review: null, error: itemsError.message };
+  if (!items || items.length === 0) return { review: null };
+
+  return {
+    review: {
+      retroName: prevRetro.name,
+      items: items.map((item) => {
+        const row = item as Record<string, unknown>;
+        const assignee = row.users as {
+          full_name?: string | null;
+          email?: string | null;
+        } | null;
+        const card = row.retro_cards as { content?: string | null } | null;
+        return {
+          id: item.id,
+          content: item.content,
+          assignedToName: assignee?.full_name || assignee?.email || null,
+          cardContent: card?.content || null,
+          status: "pending" as const,
+        };
+      }),
+    },
+  };
+}
+
 export async function advancePhase(retroId: string) {
   if (!isValidUUID(retroId)) return { error: "Invalid retro ID" };
   const supabase = await createClient();
@@ -107,10 +169,34 @@ export async function advancePhase(retroId: string) {
   const moderatorId = retro.moderator_id ?? retro.created_by;
   if (moderatorId !== user.id) return { error: "Not authorized" };
 
-  const nextPhase = VALID_TRANSITIONS[retro.phase];
+  let nextPhase = VALID_TRANSITIONS[retro.phase];
   if (!nextPhase) return { error: "No next phase" };
 
-  const updatePayload: Record<string, unknown> = { phase: nextPhase };
+  const updatePayload: Record<string, unknown> = {};
+
+  if (retro.phase === "lobby") {
+    const { review, error: reviewError } = await loadPreviousActionReview(
+      supabase,
+      retro,
+    );
+    if (reviewError) return { error: reviewError };
+    if (review) {
+      nextPhase = "review";
+      updatePayload.config = {
+        ...((retro.config as Record<string, unknown> | null) ?? {}),
+        previousActionReview: review,
+      };
+    }
+  }
+
+  if (retro.phase === "review") {
+    const review = parseRetroConfig(retro.config).previousActionReview;
+    if (review?.items.some((item) => item.status === "pending")) {
+      return { error: "Review all action items before continuing" };
+    }
+  }
+
+  updatePayload.phase = nextPhase;
   if ("phase_started_at" in retro)
     updatePayload.phase_started_at = new Date().toISOString();
 
@@ -351,41 +437,12 @@ export async function revealCardAuthor(cardId: string) {
   return { success: true };
 }
 
-export async function markPreviousActionDone(itemId: string) {
-  if (!isValidUUID(itemId)) return { error: "Invalid item ID" };
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
-
-  // Verify user is a participant in the retro that owns this action item
-  const { data: item } = await supabase
-    .from("action_items")
-    .select("retro_id")
-    .eq("id", itemId)
-    .single();
-  if (!item) return { error: "Action item not found" };
-
-  const { data: participant } = await supabase
-    .from("retro_participants")
-    .select("id")
-    .eq("retro_id", item.retro_id)
-    .eq("user_id", user.id)
-    .single();
-  if (!participant) return { error: "Not authorized" };
-
-  const { error } = await supabase
-    .from("action_items")
-    .update({ completed: true })
-    .eq("id", itemId);
-
-  if (error) return { error: error.message };
-  return { success: true };
-}
-
-export async function carryOverActionItem(itemId: string, toRetroId: string) {
-  if (!isValidUUID(itemId) || !isValidUUID(toRetroId))
+export async function resolvePreviousActionItem(
+  retroId: string,
+  itemId: string,
+  decision: "done" | "carried" | "dropped",
+) {
+  if (!isValidUUID(retroId) || !isValidUUID(itemId))
     return { error: "Invalid ID" };
   const supabase = await createClient();
   const {
@@ -393,22 +450,63 @@ export async function carryOverActionItem(itemId: string, toRetroId: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const { data: original } = await supabase
-    .from("action_items")
-    .select("content, assigned_to_user_id")
-    .eq("id", itemId)
+  const { data: retro } = await supabase
+    .from("retros")
+    .select("*")
+    .eq("id", retroId)
     .single();
+  if (!retro) return { error: "Retro not found" };
 
-  if (!original) return { error: "Action item not found" };
+  if ((retro.moderator_id ?? retro.created_by) !== user.id)
+    return { error: "Not authorized" };
+  if (retro.phase !== "review") return { error: "Wrong phase" };
 
-  const { error } = await supabase.from("action_items").insert({
-    retro_id: toRetroId,
-    content: original.content,
-    assigned_to_user_id: original.assigned_to_user_id,
-    created_by: user.id,
-    carried_over_from: itemId,
-  });
+  const review = parseRetroConfig(retro.config).previousActionReview;
+  const item = review?.items.find((i) => i.id === itemId);
+  if (!review || !item) return { error: "Action item not found" };
+  if (item.status !== "pending") return { error: "Action item already reviewed" };
 
+  if (decision === "done") {
+    const { error } = await supabase
+      .from("action_items")
+      .update({ completed: true })
+      .eq("id", itemId);
+    if (error) return { error: error.message };
+  }
+
+  if (decision === "carried") {
+    const { data: original } = await supabase
+      .from("action_items")
+      .select("content, assigned_to_user_id")
+      .eq("id", itemId)
+      .single();
+    if (!original) return { error: "Action item not found" };
+
+    const { error } = await supabase.from("action_items").insert({
+      retro_id: retroId,
+      content: original.content,
+      assigned_to_user_id: original.assigned_to_user_id,
+      created_by: user.id,
+      carried_over_from: itemId,
+    });
+    if (error) return { error: error.message };
+  }
+
+  const config = {
+    ...((retro.config as Record<string, unknown> | null) ?? {}),
+    previousActionReview: {
+      ...review,
+      items: review.items.map((i) =>
+        i.id === itemId ? { ...i, status: decision } : i,
+      ),
+    },
+  } as RetroRow["config"];
+
+  const { error } = await supabase
+    .from("retros")
+    .update({ config })
+    .eq("id", retroId);
   if (error) return { error: error.message };
-  return { success: true };
+
+  return { success: true, config };
 }
