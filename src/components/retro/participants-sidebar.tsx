@@ -42,6 +42,9 @@ export function ParticipantsSidebar() {
   if (!mounted || !retro) return null
 
   const isModerator = currentUserId && (retro.moderator_id ?? retro.created_by) === currentUserId
+  const sortedParticipants = [...participants].sort(
+    (a, b) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime() || a.id.localeCompare(b.id)
+  )
 
   const handleTransferModerator = async (newUserId: string) => {
     const result = await transferModerator(retro.id, newUserId)
@@ -76,7 +79,7 @@ export function ParticipantsSidebar() {
       </div>
       <ScrollArea className="flex-1">
         <div className="space-y-2 p-4">
-          {participants.map((participant) => {
+          {sortedParticipants.map((participant) => {
             const user = (participant as ParticipantWithUser).users
             const name = user?.full_name || participant.guest_name || 'Anonymous'
             const avatarUrl = user?.avatar_url

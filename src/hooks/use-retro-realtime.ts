@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRetroStore } from "@/lib/store/retro-store";
 import { autoTransferModerator } from "@/app/actions/retro";
 import type { Database } from "@/types/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type CardRow = Database["public"]["Tables"]["retro_cards"]["Row"];
 type ParticipantRow = Database["public"]["Tables"]["retro_participants"]["Row"];
@@ -15,6 +16,30 @@ type PresenceEntry = {
   user_id?: string;
   draft?: { column: string; length: number } | null;
 };
+
+function getOnlineUserIds(channel: RealtimeChannel | null) {
+  const online = new Set<string>();
+  if (!channel) return online;
+  Object.values(channel.presenceState())
+    .flat()
+    .forEach((entry) => {
+      const uid = (entry as PresenceEntry).user_id;
+      if (uid) online.add(uid);
+    });
+  return online;
+}
+
+// Presence is the source of truth for online status; the DB column goes stale.
+// An empty presence state means the channel has not synced yet, so keep the fallback.
+function resolveOnline(
+  channel: RealtimeChannel | null,
+  userId: string | null,
+  fallback: boolean,
+) {
+  const online = getOnlineUserIds(channel);
+  if (!userId || online.size === 0) return fallback;
+  return online.has(userId);
+}
 
 export function useRetroRealtime(retroId: string, userId?: string) {
   const supabase = createClient();
@@ -35,7 +60,8 @@ export function useRetroRealtime(retroId: string, userId?: string) {
     addActionItem,
     updateActionItem,
     removeActionItem,
-    setRetro,
+    applyServerRetro,
+    setLocalDiscussionCard,
     setDraft,
     setRealtimeChannel,
     reset,
@@ -103,11 +129,19 @@ export function useRetroRealtime(retroId: string, userId?: string) {
               .single()
               .then(({ data }) => {
                 if (data)
-                  addParticipant(data as ParticipantRow & { users: unknown });
+                  addParticipant({
+                    ...(data as ParticipantRow & { users: unknown }),
+                    online: resolveOnline(channel, data.user_id, data.online),
+                  });
               });
           }
-          if (payload.eventType === "UPDATE")
-            updateParticipant(payload.new as ParticipantRow);
+          if (payload.eventType === "UPDATE") {
+            const row = payload.new as ParticipantRow;
+            const existing = useRetroStore
+              .getState()
+              .participants.find((p) => p.id === row.id);
+            updateParticipant({ ...row, online: existing?.online ?? row.online });
+          }
           if (payload.eventType === "DELETE")
             removeParticipant((payload.old as Partial<ParticipantRow>).id!);
         },
@@ -151,7 +185,7 @@ export function useRetroRealtime(retroId: string, userId?: string) {
           filter: `id=eq.${retroId}`,
         },
         (payload) => {
-          setRetro(payload.new as RetroRow);
+          applyServerRetro(payload.new as RetroRow);
         },
       )
       .on(
@@ -195,8 +229,7 @@ export function useRetroRealtime(retroId: string, userId?: string) {
       })
       .on("broadcast", { event: "discussion_card" }, ({ payload }) => {
         const { card_id } = payload as { card_id: string };
-        const cur = useRetroStore.getState().retro;
-        if (cur) setRetro({ ...cur, current_discussion_card_id: card_id });
+        setLocalDiscussionCard(card_id);
       })
       .on("broadcast", { event: "card_reveal" }, ({ payload }) => {
         const { card_id } = payload as { card_id: string };
@@ -234,16 +267,7 @@ export function useRetroRealtime(retroId: string, userId?: string) {
               offlineTimers.current.delete(uid);
               // Re-check presence state before marking offline
               const ch = useRetroStore.getState().realtimeChannel;
-              if (ch) {
-                const online = new Set<string>();
-                Object.values(ch.presenceState())
-                  .flat()
-                  .forEach((e) => {
-                    const uid = (e as PresenceEntry).user_id;
-                    if (uid) online.add(uid);
-                  });
-                if (online.has(uid)) return; // Still online, don't mark offline
-              }
+              if (getOnlineUserIds(ch).has(uid)) return; // Still online, don't mark offline
               setParticipantOnline(uid, false);
             }, 5000);
             offlineTimers.current.set(uid, offlineTimer);
@@ -262,16 +286,7 @@ export function useRetroRealtime(retroId: string, userId?: string) {
                 currentRetro.moderator_id ?? currentRetro.created_by;
               if (currentMod !== uid) return;
 
-              const ch = state.realtimeChannel;
-              const onlineUserIds = new Set<string>();
-              if (ch) {
-                Object.values(ch.presenceState())
-                  .flat()
-                  .forEach((e) => {
-                    const uid = (e as PresenceEntry).user_id;
-                    if (uid) onlineUserIds.add(uid);
-                  });
-              }
+              const onlineUserIds = getOnlineUserIds(state.realtimeChannel);
 
               // Abort if moderator reconnected
               if (onlineUserIds.has(uid)) return;
@@ -299,14 +314,7 @@ export function useRetroRealtime(retroId: string, userId?: string) {
         });
       })
       .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState();
-        const onlineUserIds = new Set<string>();
-        Object.values(state)
-          .flat()
-          .forEach((p) => {
-            const entry = p as PresenceEntry;
-            if (entry.user_id) onlineUserIds.add(entry.user_id);
-          });
+        const onlineUserIds = getOnlineUserIds(channel);
         // Cancel offline timers for users confirmed online by sync
         onlineUserIds.forEach((uid) => {
           const timer = offlineTimers.current.get(uid);
@@ -346,7 +354,32 @@ export function useRetroRealtime(retroId: string, userId?: string) {
         .select("*")
         .eq("id", retroId)
         .single();
-      if (retro) setRetro(retro as RetroRow);
+      if (retro) applyServerRetro(retro as RetroRow);
+
+      // Participants — joins between the SSR snapshot and the channel subscribing
+      // never produce an event for this client, so the list has to converge here.
+      const { data: serverParticipants } = await supabase
+        .from("retro_participants")
+        .select("*, users(*)")
+        .eq("retro_id", retroId);
+      if (serverParticipants) {
+        const { participants: current, realtimeChannel: ch } =
+          useRetroStore.getState();
+        const currentById = new Map(current.map((p) => [p.id, p]));
+        const serverIds = new Set(serverParticipants.map((p) => p.id));
+        serverParticipants.forEach((p) => {
+          const existing = currentById.get(p.id);
+          const row = {
+            ...(p as ParticipantRow & { users: unknown }),
+            online: resolveOnline(ch, p.user_id, existing?.online ?? p.online),
+          };
+          if (existing) updateParticipant(row);
+          else addParticipant(row);
+        });
+        current.forEach((p) => {
+          if (!serverIds.has(p.id)) removeParticipant(p.id);
+        });
+      }
 
       // Groups — most critical, postgres_changes historically unreliable on this table
       const { data: serverGroups } = await supabase

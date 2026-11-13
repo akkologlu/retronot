@@ -27,6 +27,43 @@ describe("RetroConfigSchema", () => {
     }
   });
 
+  it("keeps previousActionReview when parsing", () => {
+    const previousActionReview = {
+      retroName: "Sprint 1",
+      items: [
+        {
+          id: "item-1",
+          content: "Fix the build",
+          assignedToName: null,
+          cardContent: null,
+          status: "pending" as const,
+        },
+      ],
+    };
+    expect(
+      parseRetroConfig({ voteLimit: 3, previousActionReview })
+        .previousActionReview,
+    ).toEqual(previousActionReview);
+  });
+
+  it("rejects an unknown review status", () => {
+    const result = RetroConfigSchema.safeParse({
+      previousActionReview: {
+        retroName: "Sprint 1",
+        items: [
+          {
+            id: "item-1",
+            content: "Fix the build",
+            assignedToName: null,
+            cardContent: null,
+            status: "skipped",
+          },
+        ],
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects voteLimit > 20", () => {
     const result = RetroConfigSchema.safeParse({ voteLimit: 100 });
     expect(result.success).toBe(false);

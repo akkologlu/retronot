@@ -14,7 +14,6 @@ import { advancePhase } from '@/app/actions/retro'
 import { Loader2, Play, UserPlus, QrCode, Copy } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import QRCode from 'react-qr-code'
-import PreviousActionItems from '@/components/retro/previous-action-items'
 
 type ParticipantWithUser = {
   id: string
@@ -23,66 +22,16 @@ type ParticipantWithUser = {
   users?: { full_name: string | null; email: string | null } | null
 }
 
-interface PrevItem {
-  id: string
-  content: string
-  assigned_to_name?: string | null
-  card_content?: string | null
-}
-
 export default function LobbyPage({ params }: { params: Promise<{ id: string }> }) {
   void use(params)
   const { retro, participants } = useRetroStore()
   const [isInviting, setIsInviting] = useState(false)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [prevItems, setPrevItems] = useState<PrevItem[]>([])
-  const [prevRetroName, setPrevRetroName] = useState('')
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data: { user } }) => setUser(user))
   }, [])
-
-  useEffect(() => {
-    if (!retro?.team_id) return
-    const supabase = createClient()
-    ;(async () => {
-      const { data: prevRetro } = await supabase
-        .from('retros')
-        .select('id, name')
-        .eq('team_id', retro.team_id)
-        .eq('phase', 'summary')
-        .neq('id', retro.id)
-        .is('archived_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (!prevRetro) return
-      setPrevRetroName(prevRetro.name)
-
-      const { data: items } = await supabase
-        .from('action_items')
-        .select('id, content, users!action_items_assigned_to_user_id_fkey(full_name, email), retro_cards(content)')
-        .eq('retro_id', prevRetro.id)
-        .eq('completed', false)
-        .order('created_at', { ascending: true })
-
-      if (items) {
-        setPrevItems(items.map(i => {
-          const row = i as Record<string, unknown>
-          const users = row.users as { full_name?: string; email?: string } | null
-          const card = row.retro_cards as { content?: string } | null
-          return {
-            id: i.id,
-            content: i.content,
-            assigned_to_name: users?.full_name || users?.email || null,
-            card_content: card?.content || null,
-          }
-        }))
-      }
-    })()
-  }, [retro?.id, retro?.team_id])
 
   const handleStartRetro = async () => {
     if (!retro) return
@@ -129,17 +78,6 @@ export default function LobbyPage({ params }: { params: Promise<{ id: string }> 
         <h1 className="text-4xl font-bold tracking-tight">{retro.name}</h1>
         <p className="text-muted-foreground mt-2">Waiting for everyone to join...</p>
       </motion.div>
-
-      {prevItems.length > 0 && (
-        <div className="w-full max-w-2xl">
-          <PreviousActionItems
-            items={prevItems}
-            currentRetroId={retro.id}
-            previousRetroName={prevRetroName}
-            isHost={!!isOwner}
-          />
-        </div>
-      )}
 
       <Card className="w-full max-w-2xl">
         <CardHeader className="flex flex-row items-center justify-between">

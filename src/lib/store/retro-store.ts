@@ -14,8 +14,13 @@ export interface ParticipantUser {
   avatarUrl: string | null;
 }
 
+// How long a local discussion card change wins over rows coming from the server.
+// Polls and realtime echoes started before the change can still deliver the old card.
+export const LOCAL_DISCUSSION_CARD_GUARD_MS = 3000;
+
 interface RetroState {
   retro: Retro | null;
+  localDiscussionCard: { cardId: string | null; until: number } | null;
   participants: Participant[];
   cards: Card[];
   groups: Group[];
@@ -24,6 +29,8 @@ interface RetroState {
   participantUsers: Record<string, ParticipantUser>;
 
   setRetro: (retro: Retro) => void;
+  applyServerRetro: (retro: Retro) => void;
+  setLocalDiscussionCard: (cardId: string | null) => void;
   setParticipants: (participants: Participant[]) => void;
   setParticipantUsers: (map: Record<string, ParticipantUser>) => void;
   setCards: (cards: Card[]) => void;
@@ -70,6 +77,7 @@ interface RetroState {
 
 const initialState = {
   retro: null,
+  localDiscussionCard: null,
   participants: [],
   cards: [],
   groups: [],
@@ -85,6 +93,28 @@ export const useRetroStore = create<RetroState>((set) => ({
   ...initialState,
 
   setRetro: (retro) => set({ retro }),
+  applyServerRetro: (retro) =>
+    set((state) => {
+      const guard = state.localDiscussionCard;
+      if (guard && Date.now() < guard.until) {
+        return {
+          retro: { ...retro, current_discussion_card_id: guard.cardId },
+        };
+      }
+      return { retro, localDiscussionCard: null };
+    }),
+  setLocalDiscussionCard: (cardId) =>
+    set((state) =>
+      state.retro
+        ? {
+            retro: { ...state.retro, current_discussion_card_id: cardId },
+            localDiscussionCard: {
+              cardId,
+              until: Date.now() + LOCAL_DISCUSSION_CARD_GUARD_MS,
+            },
+          }
+        : {},
+    ),
   setParticipants: (participants) => set({ participants }),
   setParticipantUsers: (participantUsers) => set({ participantUsers }),
   setCards: (cards) => set({ cards }),
@@ -120,7 +150,7 @@ export const useRetroStore = create<RetroState>((set) => ({
   updateParticipant: (participant) =>
     set((state) => ({
       participants: state.participants.map((p) =>
-        p.id === participant.id ? participant : p,
+        p.id === participant.id ? { ...p, ...participant } : p,
       ),
     })),
   setParticipantOnline: (userId, online) =>

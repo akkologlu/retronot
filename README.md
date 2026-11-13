@@ -22,6 +22,7 @@ A real-time retrospective board for agile teams. Runs structured retros through 
 | Phase | Description |
 |-------|-------------|
 | `lobby` | Participants join before the retro starts |
+| `review` | Moderator resolves open action items from the previous retro (skipped if there are none) |
 | `write` | Each user adds cards anonymously per column |
 | `group` | Facilitator drags cards into thematic groups |
 | `vote` | Participants vote on cards/groups (configurable limit) |

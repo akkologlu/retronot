@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-const ACTIVE_PHASES = new Set(['lobby', 'write', 'group', 'vote', 'discuss'])
+const ACTIVE_PHASES = new Set(['lobby', 'review', 'write', 'group', 'vote', 'discuss'])
 
 function phaseBadge(phase: string) {
   if (phase === 'summary') return { label: 'Completed', className: 'bg-muted text-muted-foreground' }
