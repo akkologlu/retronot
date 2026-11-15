@@ -36,6 +36,8 @@ export default function SummaryPage() {
     return []
   }, [retro])
 
+  const carriedItems = actionItems.filter(item => item.carried_over_from)
+
   const processedItems = useMemo(() => {
     const items: { type: 'single' | 'group', id: string, cards: typeof cards, voteCount: number, column: string }[] = []
     const processedCardIds = new Set<string>()
@@ -183,6 +185,21 @@ export default function SummaryPage() {
 
       <div className="flex-1 overflow-x-auto">
         <div ref={contentRef} className={`flex gap-6 min-w-max w-fit pb-4 p-1 ${isCapturing ? 'h-auto' : 'h-full'}`}> {/* Added p-1 to prevent shadow clipping */}
+          {carriedItems.length > 0 && (
+            <div className={`w-80 flex flex-col bg-muted/30 rounded-lg p-4 border ${isCapturing ? 'h-auto' : 'h-full'}`}>
+              <div className="font-semibold mb-4 px-2 py-1 rounded w-fit bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                Carried over
+              </div>
+              <ul className={`flex-1 space-y-2 overflow-x-hidden pr-2 ${isCapturing ? 'overflow-visible h-auto' : 'overflow-y-auto thin-scrollbar'}`}>
+                {carriedItems.map(item => (
+                  <li key={item.id} className="text-xs bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100 p-2 rounded border border-green-100 dark:border-green-900 break-words">
+                    {item.content}
+                    {item.due_date && <span className="block mt-1 opacity-70">Due {item.due_date}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {columns.map((column) => {
             const columnItems = processedItems.filter(item => item.column === column.id)
 

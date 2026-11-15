@@ -152,6 +152,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
   let retroA = ''
   let retroB = ''
   let advanceActionId = ''
+  let teamId = ''
 
   test.beforeAll(async ({ browser }: { browser: Browser }) => {
     for (const user of Object.keys(CREDENTIALS) as UserKey[]) {
@@ -174,6 +175,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
       .select()
       .single()
     if (error) throw error
+    teamId = team.id
     const { error: memberError } = await clients.mod
       .from('team_members')
       .insert({ team_id: team.id, user_id: userIds.mod, role: 'owner' })
@@ -504,6 +506,72 @@ test.describe.serial('Retro smoke (3 users)', () => {
     for (const page of everyone) {
       await expect(page.getByRole('heading', { name: 'Write Phase' })).toBeVisible({ timeout: 20000 })
     }
+  })
+
+  test('carried items stay visible in discussion, without the old due date', async () => {
+    const draft = pages.mod.getByPlaceholder('Type your thought...')
+    await pages.mod.getByRole('button', { name: 'Add Card' }).first().click()
+    await draft.fill(`Smoke card B ${RUN}`)
+    await draft.press('Enter')
+    await expect(pages.mod.getByText(`Smoke card B ${RUN}`)).toBeVisible()
+    for (const heading of ['Grouping Phase', 'Voting Phase', 'Discussion Phase']) {
+      await pages.mod.getByRole('button', { name: 'Next Phase' }).click()
+      await expect(pages.mod.getByRole('heading', { name: heading })).toBeVisible({ timeout: 20000 })
+    }
+
+    for (const page of Object.values(pages)) {
+      await expect(page.getByText('Carried over (1)')).toBeVisible({ timeout: 20000 })
+      await expect(page.getByText(ITEMS.carry)).toBeVisible()
+    }
+    const dueDate = (await clients.mod.from('action_items').select('due_date').eq('retro_id', retroB).single()).data
+    expect(dueDate?.due_date).toBeNull()
+
+    // Participants read the date; only the moderator sets it.
+    await expect(pages.u2.getByText('No due date')).toBeVisible()
+    await expect(pages.u2.getByLabel(`Due date for ${ITEMS.carry}`)).toHaveCount(0)
+    await expect(pages.u2.getByRole('button', { name: `Delete ${ITEMS.carry}` })).toHaveCount(0)
+
+    await pages.mod.getByLabel(`Due date for ${ITEMS.carry}`).fill('2030-01-15')
+    await expect(pages.u2.getByText('2030-01-15')).toBeVisible({ timeout: 10000 })
+    await expect(pages.u3.getByText('2030-01-15')).toBeVisible({ timeout: 10000 })
+    const saved = (await clients.mod.from('action_items').select('due_date').eq('retro_id', retroB).single()).data
+    expect(saved?.due_date).toBe('2030-01-15')
+  })
+
+  test('anyone can leave the session, and a leaving moderator hands over', async () => {
+    const leave = async (page: Page) => {
+      await sidebar(page).getByRole('button', { name: 'Leave session' }).click()
+      await page.getByRole('dialog').getByRole('button', { name: 'Leave', exact: true }).click()
+      await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 })
+    }
+
+    await leave(pages.u3)
+    await expect(sidebar(pages.mod).getByText('Online', { exact: true })).toHaveCount(2, { timeout: 15000 })
+
+    await sidebar(pages.mod).getByRole('button', { name: 'Leave session' }).click()
+    await expect(pages.mod.getByRole('dialog')).toContainText('moderator role will pass to')
+    await pages.mod.getByRole('dialog').getByRole('button', { name: 'Leave', exact: true }).click()
+    await expect(pages.mod).toHaveURL(/\/dashboard/, { timeout: 15000 })
+
+    // The remaining participant can run the retro straight away.
+    await expect(pages.u2.getByRole('button', { name: 'Finish' })).toBeVisible({ timeout: 10000 })
+    const retro = (await clients.mod.from('retros').select('moderator_id').eq('id', retroB).single()).data
+    expect(retro?.moderator_id).toBe(userIds.u2)
+
+    await pages.u2.getByRole('button', { name: 'Finish' }).click()
+    await expect(pages.u2).toHaveURL(/\/summary/, { timeout: 20000 })
+  })
+
+  test('carried items appear on the summary and once on the team page', async () => {
+    await expect(pages.u2.getByText('Carried over')).toBeVisible({ timeout: 15000 })
+    await expect(pages.u2.getByText(ITEMS.carry)).toBeVisible()
+    await expect(pages.u2.getByText('Due 2030-01-15')).toBeVisible()
+    await expect(pages.u2.getByRole('button', { name: 'Leave session' })).toHaveCount(0)
+
+    await pages.mod.goto(`/teams/${teamId}`)
+    await expect(pages.mod.getByText(ITEMS.done)).toBeVisible({ timeout: 15000 })
+    await expect(pages.mod.getByText(ITEMS.carry)).toHaveCount(1)
+    await expect(pages.mod.getByText(ITEMS.drop)).toHaveCount(1)
   })
 
   test('no uncaught page errors during the session', async () => {
