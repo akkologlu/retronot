@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { PhaseControls } from '@/components/retro/phase-controls'
 import PreviousActionItems from '@/components/retro/previous-action-items'
-import { advancePhase, resolvePreviousActionItem } from '@/app/actions/retro'
+import { resolvePreviousActionItem } from '@/app/actions/retro'
 import { parseRetroConfig } from '@/lib/schemas'
 import { useRetroStore } from '@/lib/store/retro-store'
 import { createClient } from '@/lib/supabase/client'
@@ -14,7 +14,6 @@ export default function ReviewPhase() {
   const { retro, setRetro } = useRetroStore()
   const [userId, setUserId] = useState<string | null>(null)
   const [isResolving, setIsResolving] = useState(false)
-  const [isAdvancing, setIsAdvancing] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -45,18 +44,6 @@ export default function ReviewPhase() {
     }
   }
 
-  const handleContinue = async () => {
-    setIsAdvancing(true)
-    try {
-      const result = await advancePhase(retro.id)
-      if (result?.error) throw new Error(result.error)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to move to next phase')
-    } finally {
-      setIsAdvancing(false)
-    }
-  }
-
   return (
     <div className="flex min-h-full flex-col items-center p-6 max-w-3xl mx-auto w-full">
       <div className="w-full mb-6">
@@ -79,10 +66,13 @@ export default function ReviewPhase() {
 
       {isModerator ? (
         <div className="mt-6 flex flex-col items-center gap-2">
-          <Button size="lg" onClick={handleContinue} disabled={pendingCount > 0 || isResolving || isAdvancing}>
-            {isAdvancing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
-            Continue to Writing
-          </Button>
+          <PhaseControls
+            retro={retro}
+            isModerator={isModerator}
+            size="lg"
+            nextLabel={<><ArrowRight className="mr-2 h-4 w-4" />Continue to Writing</>}
+            nextDisabled={pendingCount > 0 || isResolving}
+          />
           <p className="text-sm text-muted-foreground">
             {total - pendingCount} of {total} reviewed
           </p>

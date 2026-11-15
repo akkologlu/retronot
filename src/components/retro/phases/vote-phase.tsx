@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRetroStore } from '@/lib/store/retro-store'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { Minus, Plus, ThumbsUp } from 'lucide-react'
 import { cn } from '../../../lib/utils'
-import { advancePhase } from '@/app/actions/retro'
+import { PhaseControls } from '@/components/retro/phase-controls'
 import { createVote, removeVote as removeVoteAction } from '@/app/actions/vote'
 import { parseRetroConfig } from '@/lib/schemas'
 import PhaseTimer from '@/components/retro/phase-timer'
@@ -20,7 +19,6 @@ type VoteRow = Database['public']['Tables']['retro_votes']['Row']
 export default function VotePhase() {
   const { retro, cards, votes, participants, groups, addVote, removeVote, addPendingVoteId, removePendingVoteId } = useRetroStore()
   const [userId, setUserId] = useState<string | null>(null)
-  const [isAdvancing, setIsAdvancing] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -102,17 +100,6 @@ export default function VotePhase() {
     if (result.error) {
       if (rollbackVote) addVote(rollbackVote)
       toast.error('Failed to remove vote')
-    }
-  }
-
-  const handleNextPhase = async () => {
-    if (!retro || isAdvancing) return
-    setIsAdvancing(true)
-    try {
-      const result = await advancePhase(retro.id)
-      if (result?.error) toast.error(result.error)
-    } finally {
-      setIsAdvancing(false)
     }
   }
 
@@ -210,8 +197,10 @@ export default function VotePhase() {
             </div>
           </div>
         </div>
-        {isOwner && (
-          <Button onClick={handleNextPhase} disabled={isAdvancing}>Next Phase</Button>
+        {retro && (
+          <div className="flex items-center gap-2">
+            <PhaseControls retro={retro} isModerator={!!isOwner} />
+          </div>
         )}
       </div>
 

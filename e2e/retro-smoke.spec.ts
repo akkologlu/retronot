@@ -93,6 +93,12 @@ async function replayAction(page: Page, actionId: string, args: unknown[]) {
   )
 }
 
+// Phase moves go through a confirmation dialog.
+async function confirmPhaseMove(page: Page, button: string, confirm = 'Continue') {
+  await page.getByRole('button', { name: button, exact: button === 'Back' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: confirm, exact: true }).click()
+}
+
 async function captureActionId(page: Page, trigger: () => Promise<void>) {
   const request = page.waitForRequest(r => r.method() === 'POST' && !!r.headers()['next-action'])
   await trigger()
@@ -201,13 +207,22 @@ test.describe.serial('Retro smoke (3 users)', () => {
   })
 
   test('first retro of a team skips review, and Back is blocked in every active phase', async () => {
-    advanceActionId = await captureActionId(pages.mod, () =>
-      pages.mod.getByRole('button', { name: 'Start Retro' }).click(),
-    )
+    // Cancelling the confirmation leaves everyone in the lobby.
+    await pages.mod.getByRole('button', { name: 'Start Retro' }).click()
+    await pages.mod.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click()
+    await expect(pages.mod).toHaveURL(/\/lobby/)
+
+    advanceActionId = await captureActionId(pages.mod, () => confirmPhaseMove(pages.mod, 'Start Retro'))
     for (const page of Object.values(pages)) {
       await expect(page.getByRole('heading', { name: 'Write Phase' })).toBeVisible({ timeout: 20000 })
       await expect(page).toHaveURL(/\/board/)
     }
+
+    // A repeated "Start Retro" (double click, stale tab) must not skip the write phase.
+    await replayAction(pages.mod, advanceActionId, [retroA, 'lobby'])
+    const phaseOf = async (id: string) =>
+      (await clients.mod.from('retros').select('phase').eq('id', id).single()).data?.phase
+    expect(await phaseOf(retroA)).toBe('write')
 
     // A half-typed card proves Back does not remount the page.
     await pages.mod.getByRole('button', { name: 'Add Card' }).first().click()
@@ -225,15 +240,28 @@ test.describe.serial('Retro smoke (3 users)', () => {
       await expect(pages.mod.getByText(`Smoke card ${i} ${RUN}`)).toBeVisible()
     }
 
-    await pages.mod.getByRole('button', { name: 'Next Phase' }).click()
+    // No review phase in this retro, so the write phase has nothing to go back to.
+    await expect(pages.mod.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0)
+
+    await confirmPhaseMove(pages.mod, 'Next Phase')
     await expect(pages.mod.getByRole('heading', { name: 'Grouping Phase' })).toBeVisible({ timeout: 20000 })
     await expectBackBlocked(pages.mod, pages.mod.getByRole('heading', { name: 'Grouping Phase' }))
 
-    await pages.mod.getByRole('button', { name: 'Next Phase' }).click()
+    await confirmPhaseMove(pages.mod, 'Next Phase')
     await expect(pages.mod.getByRole('heading', { name: 'Voting Phase' })).toBeVisible({ timeout: 20000 })
     await expectBackBlocked(pages.mod, pages.mod.getByRole('heading', { name: 'Voting Phase' }))
 
-    await pages.mod.getByRole('button', { name: 'Next Phase' }).click()
+    // The moderator can step back a phase; participants follow and nothing is lost.
+    await expect(pages.u2.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0)
+    await confirmPhaseMove(pages.mod, 'Back', 'Go back')
+    for (const page of Object.values(pages)) {
+      await expect(page.getByRole('heading', { name: 'Grouping Phase' })).toBeVisible({ timeout: 20000 })
+    }
+    await expect(pages.mod.getByText(`Smoke card 1 ${RUN}`)).toBeVisible()
+    await confirmPhaseMove(pages.mod, 'Next Phase')
+    await expect(pages.mod.getByRole('heading', { name: 'Voting Phase' })).toBeVisible({ timeout: 20000 })
+
+    await confirmPhaseMove(pages.mod, 'Next Phase')
     for (const page of Object.values(pages)) {
       await expect(page.getByRole('heading', { name: 'Discussion Phase' })).toBeVisible({ timeout: 20000 })
     }
@@ -390,7 +418,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
       await next.click()
       await sleep(300)
     }
-    await pages.mod.getByRole('button', { name: 'Finish' }).click()
+    await confirmPhaseMove(pages.mod, 'Finish')
     for (const page of Object.values(pages)) {
       await expect(page).toHaveURL(/\/summary/, { timeout: 20000 })
     }
@@ -436,7 +464,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
 
   test('open action items become a review phase that gates the retro', async () => {
     await expect(pages.mod.getByRole('button', { name: 'Start Retro' })).toBeVisible({ timeout: 15000 })
-    await pages.mod.getByRole('button', { name: 'Start Retro' }).click()
+    await confirmPhaseMove(pages.mod, 'Start Retro')
 
     const reviewHint = (page: Page) => page.getByText('Review what the team committed to')
     const rowOf = (page: Page, item: string) => page.locator('div.rounded-md.border', { hasText: item })
@@ -464,8 +492,8 @@ test.describe.serial('Retro smoke (3 users)', () => {
     await expect(pages.mod.getByText('0 of 3 reviewed')).toBeVisible()
 
     // The server enforces the same rules when the UI is bypassed.
-    expect(await replayAction(pages.mod, advanceActionId, [retroB])).toContain('Review all action items')
-    expect(await replayAction(pages.u2, advanceActionId, [retroB])).toContain('Not authorized')
+    expect(await replayAction(pages.mod, advanceActionId, [retroB, 'review'])).toContain('Review all action items')
+    expect(await replayAction(pages.u2, advanceActionId, [retroB, 'review'])).toContain('Not authorized')
 
     const { data: previous } = await clients.mod.from('action_items').select('id, content, completed').eq('retro_id', retroA)
     const idOf = (content: string) => previous!.find(i => i.content === content)!.id
@@ -502,7 +530,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
     const { data: carried } = await clients.mod.from('action_items').select('content, carried_over_from').eq('retro_id', retroB)
     expect(carried).toEqual([{ content: ITEMS.carry, carried_over_from: idOf(ITEMS.carry) }])
 
-    await proceed.click()
+    await confirmPhaseMove(pages.mod, 'Continue to Writing')
     for (const page of everyone) {
       await expect(page.getByRole('heading', { name: 'Write Phase' })).toBeVisible({ timeout: 20000 })
     }
@@ -515,7 +543,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
     await draft.press('Enter')
     await expect(pages.mod.getByText(`Smoke card B ${RUN}`)).toBeVisible()
     for (const heading of ['Grouping Phase', 'Voting Phase', 'Discussion Phase']) {
-      await pages.mod.getByRole('button', { name: 'Next Phase' }).click()
+      await confirmPhaseMove(pages.mod, 'Next Phase')
       await expect(pages.mod.getByRole('heading', { name: heading })).toBeVisible({ timeout: 20000 })
     }
 
@@ -558,7 +586,7 @@ test.describe.serial('Retro smoke (3 users)', () => {
     const retro = (await clients.mod.from('retros').select('moderator_id').eq('id', retroB).single()).data
     expect(retro?.moderator_id).toBe(userIds.u2)
 
-    await pages.u2.getByRole('button', { name: 'Finish' }).click()
+    await confirmPhaseMove(pages.u2, 'Finish')
     await expect(pages.u2).toHaveURL(/\/summary/, { timeout: 20000 })
   })
 

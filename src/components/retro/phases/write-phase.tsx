@@ -10,7 +10,7 @@ import { Plus, Send, Pencil, Check, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { TEMPLATE_COLUMNS } from '@/lib/constants'
-import { advancePhase } from '@/app/actions/retro'
+import { PhaseControls } from '@/components/retro/phase-controls'
 import { createCard, updateCardContent, deleteCard } from '@/app/actions/card'
 import { CardContentSchema, parseRetroConfig } from '@/lib/schemas'
 import PhaseTimer from '@/components/retro/phase-timer'
@@ -34,7 +34,6 @@ export default function WritePhase() {
   const [editingCardId, setEditingCardId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
   const [user, setUser] = useState<{ id: string } | null>(null)
-  const [isAdvancing, setIsAdvancing] = useState(false)
 
   const supabase = createClient()
 
@@ -156,17 +155,6 @@ export default function WritePhase() {
     }
   }
 
-  const handleNextPhase = async () => {
-    if (isAdvancing) return
-    setIsAdvancing(true)
-    try {
-      const result = await advancePhase(retro.id)
-      if (result?.error) toast.error(result.error)
-    } finally {
-      setIsAdvancing(false)
-    }
-  }
-
   return (
     <div className="flex h-full flex-col p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -186,11 +174,7 @@ export default function WritePhase() {
           <div className="text-sm text-muted-foreground">
             {participants.length} participants online
           </div>
-          {isOwner && (
-            <Button onClick={handleNextPhase} disabled={isAdvancing}>
-              Next Phase
-            </Button>
-          )}
+          <PhaseControls retro={retro} isModerator={!!isOwner} />
         </div>
       </div>
 

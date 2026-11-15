@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronLeft, ChevronRight, CheckCircle, Plus, Trash2, Calendar, User, EyeOff, Sparkles, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { advancePhase, setDiscussionCard, revealCardAuthor } from '@/app/actions/retro'
+import { setDiscussionCard, revealCardAuthor } from '@/app/actions/retro'
+import { PhaseControls } from '@/components/retro/phase-controls'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
 import { CarriedActionItems } from '@/components/retro/carried-action-items'
@@ -120,19 +121,6 @@ export default function DiscussPhase() {
   const handlePrevious = () => {
     if (safeActiveIndex > 0) {
       updateCurrentCard(discussionItems[safeActiveIndex - 1].id)
-    }
-  }
-
-  const handleNextPhase = async () => {
-    if (!retro || isUpdating) return
-    setIsUpdating(true)
-    try {
-      const result = await advancePhase(retro.id)
-      if (result?.error) throw new Error(result.error)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to move to next phase')
-    } finally {
-      setIsUpdating(false)
     }
   }
 
@@ -256,13 +244,23 @@ export default function DiscussPhase() {
     />
   )
 
+  if (!retro) return null
+
   if (!activeItem) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-2">Discussion Phase</h2>
         <p className="text-muted-foreground">No cards to discuss.</p>
         <div className="mt-4 w-full max-w-2xl text-left">{carriedSection}</div>
-        {isModerator && <Button onClick={handleNextPhase} className="mt-4">Finish Retro</Button>}
+        <div className="mt-4 flex items-center gap-2">
+          <PhaseControls
+            retro={retro}
+            isModerator={!!isModerator}
+            nextLabel="Finish Retro"
+            confirmTitle="Finish the retro?"
+            confirmDescription="Everyone will be moved to the summary. A finished retro can't be reopened."
+          />
+        </div>
       </div>
     )
   }
@@ -274,7 +272,10 @@ export default function DiscussPhase() {
   return (
     <div className="flex h-full flex-col items-center p-6 max-w-4xl mx-auto w-full">
       <div className="flex items-center justify-between w-full mb-8 shrink-0">
-        <h2 className="text-3xl font-bold">Discussion Phase</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-3xl font-bold">Discussion Phase</h2>
+          <PhaseControls retro={retro} isModerator={!!isModerator} showNext={false} size="sm" />
+        </div>
         <div className="text-muted-foreground">Topic {safeActiveIndex + 1} of {discussionItems.length}</div>
       </div>
 
@@ -422,10 +423,17 @@ export default function DiscussPhase() {
             Previous
           </Button>
           {safeActiveIndex === discussionItems.length - 1 ? (
-            <Button size="lg" onClick={handleNextPhase} disabled={isUpdating} className="w-32 bg-green-600 hover:bg-green-700">
-              Finish
-              <CheckCircle className="ml-2 h-4 w-4" />
-            </Button>
+            <PhaseControls
+              retro={retro}
+              isModerator={!!isModerator}
+              showBack={false}
+              size="lg"
+              nextDisabled={isUpdating}
+              nextClassName="w-32 bg-green-600 hover:bg-green-700"
+              nextLabel={<>Finish<CheckCircle className="ml-2 h-4 w-4" /></>}
+              confirmTitle="Finish the retro?"
+              confirmDescription="Everyone will be moved to the summary. A finished retro can't be reopened."
+            />
           ) : (
             <Button size="lg" onClick={handleNext} disabled={isUpdating} className="w-32">
               Next

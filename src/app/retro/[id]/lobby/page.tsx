@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { use, useState, useEffect } from 'react'
 import { createInviteLink } from '@/app/actions/team'
-import { advancePhase } from '@/app/actions/retro'
+import { PhaseControls } from '@/components/retro/phase-controls'
 import { Loader2, Play, UserPlus, QrCode, Copy } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import QRCode from 'react-qr-code'
@@ -32,16 +32,6 @@ export default function LobbyPage({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     createClient().auth.getUser().then(({ data: { user } }) => setUser(user))
   }, [])
-
-  const handleStartRetro = async () => {
-    if (!retro) return
-    const result = await advancePhase(retro.id)
-    if (result?.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('Retro started!')
-    }
-  }
 
   const isOwner = user && retro && (retro.moderator_id ?? retro.created_by) === user.id
 
@@ -141,10 +131,14 @@ export default function LobbyPage({ params }: { params: Promise<{ id: string }> 
       </Card>
 
       {isOwner ? (
-        <Button size="lg" onClick={handleStartRetro}>
-          <Play className="mr-2 h-4 w-4" />
-          Start Retro
-        </Button>
+        <PhaseControls
+          retro={retro}
+          isModerator
+          size="lg"
+          nextLabel={<><Play className="mr-2 h-4 w-4" />Start Retro</>}
+          confirmTitle="Start the retro?"
+          confirmDescription="Everyone in the lobby will be moved into the retro."
+        />
       ) : (
         <div className="text-muted-foreground text-sm">
           Waiting for host to start the retro...
