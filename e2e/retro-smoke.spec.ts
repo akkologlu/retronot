@@ -97,6 +97,8 @@ async function replayAction(page: Page, actionId: string, args: unknown[]) {
 async function confirmPhaseMove(page: Page, button: string, confirm = 'Continue') {
   await page.getByRole('button', { name: button, exact: button === 'Back' }).click()
   await page.getByRole('dialog').getByRole('button', { name: confirm, exact: true }).click()
+  // The dialog stays up while the move is in flight and closes with the phase change.
+  await expect(page.getByRole('dialog')).toBeHidden({ timeout: 20000 })
 }
 
 async function captureActionId(page: Page, trigger: () => Promise<void>) {
