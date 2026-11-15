@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { advancePhase, setDiscussionCard, revealCardAuthor } from '@/app/actions/retro'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback, RemoteAvatarImage } from '@/components/ui/avatar'
+import { CarriedActionItems } from '@/components/retro/carried-action-items'
 import { draftActionItem } from '@/lib/ai'
 import { Database } from '@/types/supabase'
 
@@ -19,7 +20,7 @@ type ParticipantWithUser = Database['public']['Tables']['retro_participants']['R
 }
 
 export default function DiscussPhase() {
-  const { retro, cards, votes, actionItems, groups, addActionItem, removeActionItem, participants, participantUsers, updateCard, setLocalDiscussionCard, realtimeChannel } = useRetroStore()
+  const { retro, cards, votes, actionItems, groups, addActionItem, updateActionItem, removeActionItem, participants, participantUsers, updateCard, setLocalDiscussionCard, realtimeChannel } = useRetroStore()
   const [isUpdating, setIsUpdating] = useState(false)
   const [revealingCardId, setRevealingCardId] = useState<string | null>(null)
   const [isDraftingAction, setIsDraftingAction] = useState(false)
@@ -195,6 +196,17 @@ export default function DiscussPhase() {
     }
   }
 
+  const handleDueDateChange = async (id: string, dueDate: string | null) => {
+    const item = actionItems.find(i => i.id === id)
+    if (!item) return
+    updateActionItem({ ...item, due_date: dueDate })
+    const { error } = await supabase.from('action_items').update({ due_date: dueDate }).eq('id', id)
+    if (error) {
+      updateActionItem(item)
+      toast.error('Failed to update due date')
+    }
+  }
+
   const getParticipantName = (userId: string | null) => {
     if (!userId) return null
     const p = (participants as ParticipantWithUser[]).find(p => p.user_id === userId)
@@ -233,11 +245,23 @@ export default function DiscussPhase() {
     }
   }
 
+  const carriedItems = actionItems.filter(item => item.carried_over_from)
+  const carriedSection = (
+    <CarriedActionItems
+      items={carriedItems}
+      isModerator={!!isModerator}
+      getAssigneeName={getParticipantName}
+      onDueDateChange={handleDueDateChange}
+      onDelete={handleDeleteActionItem}
+    />
+  )
+
   if (!activeItem) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-2">Discussion Phase</h2>
         <p className="text-muted-foreground">No cards to discuss.</p>
+        <div className="mt-4 w-full max-w-2xl text-left">{carriedSection}</div>
         {isModerator && <Button onClick={handleNextPhase} className="mt-4">Finish Retro</Button>}
       </div>
     )
@@ -313,6 +337,7 @@ export default function DiscussPhase() {
       </div>
 
       <div className="w-full max-w-2xl mt-8 shrink-0">
+        {carriedSection}
         <h3 className="text-xl font-semibold mb-4">Action Items</h3>
         <div className="space-y-2 mb-4">
           {relevantActionItems.map(item => (

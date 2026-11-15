@@ -9,9 +9,11 @@ import { parseRetroConfig } from '@/lib/schemas'
 import { transferModerator } from '@/app/actions/retro'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Shield, Sun, Moon, Users, X } from 'lucide-react'
+import { Loader2, LogOut, Shield, Sun, Moon, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useTheme } from 'next-themes'
 
 type ParticipantWithUser = {
@@ -25,6 +27,9 @@ export function ParticipantsSidebar() {
   const { participants, retro, votes } = useRetroStore()
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [leaveOpen, setLeaveOpen] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
+  const router = useRouter()
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
   const { theme, setTheme } = useTheme()
 
@@ -50,6 +55,27 @@ export function ParticipantsSidebar() {
     const result = await transferModerator(retro.id, newUserId)
     if (result?.error) toast.error(result.error)
     else toast.success('Moderator transferred')
+  }
+
+  // Hand over explicitly so the session is never left without a moderator.
+  const successor = isModerator
+    ? sortedParticipants.find(p => p.online && p.user_id && p.user_id !== currentUserId)
+    : undefined
+  const successorName = successor
+    ? (successor as ParticipantWithUser).users?.full_name || successor.guest_name || 'another participant'
+    : null
+
+  const handleLeave = async () => {
+    setIsLeaving(true)
+    if (successor?.user_id) {
+      const result = await transferModerator(retro.id, successor.user_id)
+      if (result?.error) {
+        toast.error(result.error)
+        setIsLeaving(false)
+        return
+      }
+    }
+    router.push('/dashboard')
   }
 
   const sidebarContent = (
@@ -150,11 +176,45 @@ export function ParticipantsSidebar() {
           })}
         </div>
       </ScrollArea>
+      {retro.phase !== 'summary' && (
+        <div className="border-t p-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
+            onClick={() => setLeaveOpen(true)}
+          >
+            <LogOut className="h-4 w-4" />
+            Leave session
+          </Button>
+        </div>
+      )}
     </>
   )
 
   return (
     <>
+      <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
+        <DialogContent showCloseButton={false} className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Leave session?</DialogTitle>
+            <DialogDescription>
+              {isModerator && successorName && `The moderator role will pass to ${successorName}. `}
+              {isModerator && !successorName && 'No one else is online, so you will remain the moderator. '}
+              You can rejoin from the dashboard while the retro is active.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row gap-2 sm:justify-end">
+            <Button variant="outline" onClick={() => setLeaveOpen(false)} disabled={isLeaving} className="flex-1 sm:flex-none">
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleLeave} disabled={isLeaving} className="flex-1 sm:flex-none">
+              {isLeaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Leave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Mobile toggle button */}
       <Button
         variant="outline"

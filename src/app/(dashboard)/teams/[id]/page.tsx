@@ -93,23 +93,39 @@ export default async function TeamDetailPage({ params }: PageProps) {
   let completedActions = 0
 
   if (retroIds.length > 0) {
+    // A carried item lives on as its copy, so the original must not be listed or counted again.
+    const { data: carriedRows } = await supabase
+      .from('action_items')
+      .select('carried_over_from')
+      .in('retro_id', retroIds)
+      .not('carried_over_from', 'is', null)
+    const replacedIds = (carriedRows ?? []).map(row => row.carried_over_from)
+    const withoutReplaced = <Q extends { not: (column: 'id', operator: 'in', value: string) => Q }>(query: Q) =>
+      replacedIds.length > 0 ? query.not('id', 'in', `(${replacedIds.join(',')})`) : query
+
     const [displayResult, totalCountResult, completedCountResult] = await Promise.all([
-      supabase
-        .from('action_items')
-        .select('id, content, completed, created_at, retro_id, card_id, assigned_to_user_id, users!action_items_assigned_to_user_id_fkey(full_name, email), retro_cards(content)')
-        .in('retro_id', retroIds)
+      withoutReplaced(
+        supabase
+          .from('action_items')
+          .select('id, content, completed, created_at, retro_id, card_id, assigned_to_user_id, users!action_items_assigned_to_user_id_fkey(full_name, email), retro_cards(content)')
+          .in('retro_id', retroIds),
+      )
         .order('completed', { ascending: true })
         .order('created_at', { ascending: false })
         .limit(ACTION_ITEMS_DISPLAY_LIMIT),
-      supabase
-        .from('action_items')
-        .select('*', { count: 'exact', head: true })
-        .in('retro_id', retroIds),
-      supabase
-        .from('action_items')
-        .select('*', { count: 'exact', head: true })
-        .in('retro_id', retroIds)
-        .eq('completed', true),
+      withoutReplaced(
+        supabase
+          .from('action_items')
+          .select('*', { count: 'exact', head: true })
+          .in('retro_id', retroIds),
+      ),
+      withoutReplaced(
+        supabase
+          .from('action_items')
+          .select('*', { count: 'exact', head: true })
+          .in('retro_id', retroIds)
+          .eq('completed', true),
+      ),
     ])
     actionItems = displayResult.data ?? []
     totalActions = totalCountResult.count ?? 0
