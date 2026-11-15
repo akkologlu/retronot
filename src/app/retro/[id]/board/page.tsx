@@ -9,6 +9,7 @@ import VotePhase from '@/components/retro/phases/vote-phase'
 import DiscussPhase from '@/components/retro/phases/discuss-phase'
 import { PhaseTransitionOverlay } from '@/components/retro/phase-transition-overlay'
 import { Loader2 } from 'lucide-react'
+import { PHASE_ORDER, type Phase as RetroPhase } from '@/lib/phases'
 import { AnimatePresence, motion } from 'framer-motion'
 
 type Phase = 'review' | 'write' | 'group' | 'vote' | 'discuss' | 'summary'
@@ -28,7 +29,7 @@ function PhaseComponent({ phase }: { phase: string }) {
 export default function RetroBoardPage() {
   const { retro } = useRetroStore()
   const prevPhaseRef = useRef<string | null>(null)
-  const [overlayPhase, setOverlayPhase] = useState<Phase | null>(null)
+  const [overlay, setOverlay] = useState<{ phase: Phase; direction: 'forward' | 'back' } | null>(null)
 
   useEffect(() => {
     const current = retro?.phase
@@ -37,10 +38,12 @@ export default function RetroBoardPage() {
     if (prevPhaseRef.current === null) {
       // First load: show overlay when arriving from the lobby (lobby → review or write)
       if (current === 'review' || current === 'write') {
-        setOverlayPhase(current as Phase) // eslint-disable-line react-hooks/set-state-in-effect
+        setOverlay({ phase: current as Phase, direction: 'forward' }) // eslint-disable-line react-hooks/set-state-in-effect
       }
     } else if (prevPhaseRef.current !== current) {
-      setOverlayPhase(current as Phase) // eslint-disable-line react-hooks/set-state-in-effect
+      const movedBack =
+        PHASE_ORDER.indexOf(current) < PHASE_ORDER.indexOf(prevPhaseRef.current as RetroPhase)
+      setOverlay({ phase: current as Phase, direction: movedBack ? 'back' : 'forward' })
     }
     prevPhaseRef.current = current
   }, [retro?.phase])
@@ -64,10 +67,11 @@ export default function RetroBoardPage() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {overlayPhase && (
+        {overlay && (
           <PhaseTransitionOverlay
-            phase={overlayPhase}
-            onDone={() => setOverlayPhase(null)}
+            phase={overlay.phase}
+            direction={overlay.direction}
+            onDone={() => setOverlay(null)}
           />
         )}
       </AnimatePresence>

@@ -217,6 +217,8 @@ export default function StartRetroWizard({ teams, open, onOpenChange }: StartRet
             <div className="space-y-2">
               {localTeams.length > 0 && !showNewTeamForm && (
                 <>
+                  {/* Scrolls on its own so a long team list cannot push the footer off screen. */}
+                  <div className="max-h-[45vh] space-y-2 overflow-y-auto">
                   {localTeams.map(team => (
                     <button
                       key={team.id}
@@ -238,6 +240,7 @@ export default function StartRetroWizard({ teams, open, onOpenChange }: StartRet
                       )}
                     </button>
                   ))}
+                  </div>
                   <button
                     onClick={() => setShowNewTeamForm(true)}
                     className="w-full flex items-center gap-2 rounded-lg border border-dashed p-3 text-sm text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"

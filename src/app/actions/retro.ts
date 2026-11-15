@@ -10,20 +10,11 @@ import {
   type PreviousActionReview,
 } from "@/lib/schemas";
 import { isValidUUID } from "@/lib/schemas";
+import { getPreviousPhase, NEXT_PHASE, type Phase } from "@/lib/phases";
 
-type Phase = Database["public"]["Tables"]["retros"]["Row"]["phase"];
 type RetroRow = Database["public"]["Tables"]["retros"]["Row"];
 type ServerSupabase = Awaited<ReturnType<typeof createClient>>;
 
-// lobby moves to "review" instead when the previous retro has open action items.
-const VALID_TRANSITIONS: Partial<Record<Phase, Phase>> = {
-  lobby: "write",
-  review: "write",
-  write: "group",
-  group: "vote",
-  vote: "discuss",
-  discuss: "summary",
-};
 
 export async function createRetro(formData: FormData) {
   const supabase = await createClient();
@@ -150,7 +141,10 @@ async function loadPreviousActionReview(
   };
 }
 
-export async function advancePhase(retroId: string) {
+// fromPhase is the phase the caller saw when it asked to move. If the retro has
+// already left that phase (double click, stale tab), the request is a no-op —
+// otherwise a second click would skip a whole phase.
+export async function advancePhase(retroId: string, fromPhase: Phase) {
   if (!isValidUUID(retroId)) return { error: "Invalid retro ID" };
   const supabase = await createClient();
   const {
@@ -168,8 +162,9 @@ export async function advancePhase(retroId: string) {
 
   const moderatorId = retro.moderator_id ?? retro.created_by;
   if (moderatorId !== user.id) return { error: "Not authorized" };
+  if (retro.phase !== fromPhase) return { success: true, stale: true };
 
-  let nextPhase = VALID_TRANSITIONS[retro.phase];
+  let nextPhase = NEXT_PHASE[retro.phase];
   if (!nextPhase) return { error: "No next phase" };
 
   const updatePayload: Record<string, unknown> = {};
@@ -211,6 +206,42 @@ export async function advancePhase(retroId: string) {
 
   if (error) return { error: error.message };
   return { success: true, nextPhase };
+}
+
+export async function goToPreviousPhase(retroId: string, fromPhase: Phase) {
+  if (!isValidUUID(retroId)) return { error: "Invalid retro ID" };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { data: retro, error: fetchError } = await supabase
+    .from("retros")
+    .select("*")
+    .eq("id", retroId)
+    .single();
+
+  if (!retro) return { error: fetchError?.message ?? "Retro not found" };
+
+  const moderatorId = retro.moderator_id ?? retro.created_by;
+  if (moderatorId !== user.id) return { error: "Not authorized" };
+  if (retro.phase !== fromPhase) return { success: true, stale: true };
+
+  const previousPhase = getPreviousPhase(retro);
+  if (!previousPhase) return { error: "No previous phase" };
+
+  const { error } = await supabase
+    .from("retros")
+    .update({
+      phase: previousPhase,
+      phase_started_at: new Date().toISOString(),
+    })
+    .eq("id", retroId)
+    .eq("phase", retro.phase);
+
+  if (error) return { error: error.message };
+  return { success: true, previousPhase };
 }
 
 export async function setDiscussionCard(
@@ -366,29 +397,11 @@ export async function transferModerator(retroId: string, newUserId: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const { data: retro } = await supabase
-    .from("retros")
-    .select("*")
-    .eq("id", retroId)
-    .single();
-
-  if (!retro) return { error: "Retro not found" };
-
-  const currentModerator = retro.moderator_id ?? retro.created_by;
-  if (currentModerator !== user.id) return { error: "Not authorized" };
-
-  const { data: participant } = await supabase
-    .from("retro_participants")
-    .select("id")
-    .eq("retro_id", retroId)
-    .eq("user_id", newUserId)
-    .single();
-  if (!participant) return { error: "User is not a retro participant" };
-
-  const { error } = await supabase
-    .from("retros")
-    .update({ moderator_id: newUserId })
-    .eq("id", retroId);
+  // moderator_id can only change through this RPC (migration 058).
+  const { error } = await supabase.rpc("transfer_moderator", {
+    p_retro_id: retroId,
+    p_new_user_id: newUserId,
+  });
 
   if (error) return { error: error.message };
   return { success: true };

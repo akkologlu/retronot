@@ -29,6 +29,20 @@ function getOnlineUserIds(channel: RealtimeChannel | null) {
   return online;
 }
 
+// Server-side heartbeat for claim_moderator, which treats a moderator as gone
+// once their last beat is older than 90s (migration 058).
+const HEARTBEAT_MS = 20_000;
+// Time a departed moderator gets to reconnect before someone claims the role.
+const MODERATOR_GRACE_MS = 10_000;
+// The server refuses a claim until the moderator's heartbeat expires.
+const MODERATOR_CLAIM_RETRY_MS = 20_000;
+
+// An unmount may be followed by a remount (Back can briefly leave the retro
+// route), so the away signal waits and is cancelled if the retro mounts again.
+// Sending it at once could reach the server after the remount's first beat.
+const AWAY_DELAY_MS = 3_000;
+const pendingAway = new Map<string, ReturnType<typeof setTimeout>>();
+
 // Presence is the source of truth for online status; the DB column goes stale.
 // An empty presence state means the channel has not synced yet, so keep the fallback.
 function resolveOnline(
@@ -75,6 +89,45 @@ export function useRetroRealtime(retroId: string, userId?: string) {
   useEffect(() => {
     const channel = supabase.channel(`retro:${retroId}`);
     setRealtimeChannel(channel);
+
+    // Claims the moderator role once the moderator has left presence and this
+    // user is the longest-joined participant still online.
+    let claimTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleModeratorClaim = (delayMs: number) => {
+      if (!userId || claimTimer) return;
+      claimTimer = setTimeout(async () => {
+        claimTimer = null;
+        const state = useRetroStore.getState();
+        const retro = state.retro;
+        if (!retro) return;
+        const moderatorId = retro.moderator_id ?? retro.created_by;
+        const onlineUserIds = getOnlineUserIds(state.realtimeChannel);
+        if (
+          moderatorId === userId ||
+          (moderatorId && onlineUserIds.has(moderatorId))
+        )
+          return;
+
+        const successor = state.participants
+          .filter(
+            (pt) =>
+              pt.user_id &&
+              pt.user_id !== moderatorId &&
+              onlineUserIds.has(pt.user_id),
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.joined_at).getTime() -
+              new Date(b.joined_at).getTime(),
+          )[0];
+        if (successor?.user_id !== userId) return;
+
+        const result = await autoTransferModerator(retro.id, userId);
+        if (result?.error === "A moderator is already active") {
+          scheduleModeratorClaim(MODERATOR_CLAIM_RETRY_MS);
+        }
+      }, delayMs);
+    };
 
     channel
       .on(
@@ -272,44 +325,10 @@ export function useRetroRealtime(retroId: string, userId?: string) {
             }, 5000);
             offlineTimers.current.set(uid, offlineTimer);
 
-            // Moderator auto-transfer: only if moderator truly left
-            if (!userId) return;
             const retro = useRetroStore.getState().retro;
-            const moderatorId = retro?.moderator_id ?? retro?.created_by;
-            if (uid !== moderatorId) return;
-
-            setTimeout(() => {
-              const state = useRetroStore.getState();
-              const currentRetro = state.retro;
-              if (!currentRetro) return;
-              const currentMod =
-                currentRetro.moderator_id ?? currentRetro.created_by;
-              if (currentMod !== uid) return;
-
-              const onlineUserIds = getOnlineUserIds(state.realtimeChannel);
-
-              // Abort if moderator reconnected
-              if (onlineUserIds.has(uid)) return;
-
-              const onlineParticipants = state.participants
-                .filter(
-                  (pt) =>
-                    pt.user_id &&
-                    pt.user_id !== uid &&
-                    onlineUserIds.has(pt.user_id),
-                )
-                .sort(
-                  (a, b) =>
-                    new Date(a.joined_at).getTime() -
-                    new Date(b.joined_at).getTime(),
-                );
-
-              if (onlineParticipants.length === 0) return;
-              const newMod = onlineParticipants[0];
-              if (newMod.user_id === userId) {
-                autoTransferModerator(currentRetro.id, userId);
-              }
-            }, 10000); // 10s timeout — gives ample time for reconnect
+            if (uid === (retro?.moderator_id ?? retro?.created_by)) {
+              scheduleModeratorClaim(MODERATOR_GRACE_MS);
+            }
           }
         });
       })
@@ -327,6 +346,14 @@ export function useRetroRealtime(retroId: string, userId?: string) {
           if (p.user_id)
             setParticipantOnline(p.user_id, onlineUserIds.has(p.user_id));
         });
+
+        // Covers a moderator who was already gone when this user arrived,
+        // so no leave event will ever fire for them.
+        const retro = useRetroStore.getState().retro;
+        const moderatorId = retro?.moderator_id ?? retro?.created_by;
+        if (moderatorId && onlineUserIds.size > 0 && !onlineUserIds.has(moderatorId)) {
+          scheduleModeratorClaim(MODERATOR_GRACE_MS);
+        }
       })
       .subscribe(async (status) => {
         // Re-track presence on every (re)connect so the user stays visible
@@ -336,6 +363,7 @@ export function useRetroRealtime(retroId: string, userId?: string) {
       });
 
     return () => {
+      if (claimTimer) clearTimeout(claimTimer);
       offlineTimers.current.forEach((t) => clearTimeout(t));
       offlineTimers.current.clear();
       supabase.removeChannel(channel);
@@ -343,6 +371,40 @@ export function useRetroRealtime(retroId: string, userId?: string) {
       reset();
     };
   }, [retroId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Lets the server tell whether this user is still in the session. Closing the
+  // page drops the heartbeat at once, so a handover need not wait for it to expire.
+  useEffect(() => {
+    if (!userId) return;
+    const beat = () => {
+      supabase.rpc("touch_participant", { p_retro_id: retroId }).then(
+        () => {},
+        () => {},
+      );
+    };
+    const markAway = () => {
+      navigator.sendBeacon(`/api/retro/${retroId}/away`);
+    };
+    clearTimeout(pendingAway.get(retroId));
+    pendingAway.delete(retroId);
+    beat();
+    const interval = setInterval(beat, HEARTBEAT_MS);
+    window.addEventListener("pagehide", markAway);
+    // Coming back from the back/forward cache.
+    window.addEventListener("pageshow", beat);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("pagehide", markAway);
+      window.removeEventListener("pageshow", beat);
+      pendingAway.set(
+        retroId,
+        setTimeout(() => {
+          pendingAway.delete(retroId);
+          markAway();
+        }, AWAY_DELAY_MS),
+      );
+    };
+  }, [retroId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Safety-net poll: recovers missed realtime events (INSERT/UPDATE/DELETE).
   // Uses per-item add/update/remove so optimistic state is never clobbered.

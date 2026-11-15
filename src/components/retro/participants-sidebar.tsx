@@ -103,7 +103,7 @@ export function ParticipantsSidebar() {
           </Button>
         </div>
       </div>
-      <ScrollArea className="flex-1">
+      <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-2 p-4">
           {sortedParticipants.map((participant) => {
             const user = (participant as ParticipantWithUser).users
@@ -239,14 +239,14 @@ export function ParticipantsSidebar() {
 
       {/* Mobile drawer */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 flex-col border-r bg-muted/30 backdrop-blur-sm transition-transform duration-200 md:hidden",
+        "fixed inset-y-0 left-0 z-50 w-72 min-h-0 flex-col overflow-hidden border-r bg-muted/30 backdrop-blur-sm transition-transform duration-200 md:hidden",
         mobileOpen ? 'flex translate-x-0' : 'hidden -translate-x-full'
       )}>
         {sidebarContent}
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden w-64 flex-col border-r bg-muted/30 md:flex">
+      <div className="hidden min-h-0 w-64 shrink-0 flex-col overflow-hidden border-r bg-muted/30 md:flex">
         {sidebarContent}
       </div>
     </>

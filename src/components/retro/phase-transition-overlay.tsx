@@ -59,11 +59,13 @@ const PHASE_CONFIG: Record<Phase, {
 
 interface Props {
   phase: Phase
+  direction?: 'forward' | 'back'
   onDone: () => void
 }
 
-export function PhaseTransitionOverlay({ phase, onDone }: Props) {
+export function PhaseTransitionOverlay({ phase, direction = 'forward', onDone }: Props) {
   const config = PHASE_CONFIG[phase]
+  const fromText = direction === 'back' ? 'Moderator moved back' : config.from
 
   const onDoneRef = useRef(onDone)
 
@@ -91,7 +93,7 @@ export function PhaseTransitionOverlay({ phase, onDone }: Props) {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
       >
-        {config.from && (
+        {fromText && (
           <motion.div
             className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full"
             initial={{ opacity: 0, y: -8 }}
@@ -99,7 +101,7 @@ export function PhaseTransitionOverlay({ phase, onDone }: Props) {
             transition={{ delay: 0.3 }}
           >
             <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-            {config.from}
+            {fromText}
           </motion.div>
         )}
 

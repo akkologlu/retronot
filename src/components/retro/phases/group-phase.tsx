@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { TEMPLATE_COLUMNS } from '@/lib/constants'
-import { advancePhase } from '@/app/actions/retro'
+import { PhaseControls } from '@/components/retro/phase-controls'
 import { parseRetroConfig } from '@/lib/schemas'
 import { Sparkles, Loader2, X } from 'lucide-react'
 import { suggestGroups, type GroupSuggestion } from '@/lib/ai'
@@ -179,7 +179,6 @@ export default function GroupPhase() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retro?.id])
 
-  const [isAdvancing, setIsAdvancing] = useState(false)
   const isOwner = userId && retro && (retro.moderator_id ?? retro.created_by) === userId
 
   const columns = useMemo(() => {
@@ -320,17 +319,6 @@ export default function GroupPhase() {
     broadcastSuggestions([])
   }
 
-  const handleNextPhase = async () => {
-    if (!retro || isAdvancing) return
-    setIsAdvancing(true)
-    try {
-      const result = await advancePhase(retro.id)
-      if (result?.error) toast.error(result.error)
-    } finally {
-      setIsAdvancing(false)
-    }
-  }
-
   const columnData = useMemo(() => {
     return columns.reduce((acc, column) => {
       const columnCards = cards.filter(c => c.column_name === column && (!c.group_id || !groups.some(g => g.id === c.group_id)))
@@ -352,7 +340,7 @@ export default function GroupPhase() {
           <h2 className="text-2xl font-bold">Grouping Phase</h2>
           <div className="flex items-center gap-2">
             <div className="text-sm text-muted-foreground hidden sm:block">Drag cards to group · double-click to rename</div>
-            {isOwner && <Button onClick={handleNextPhase} variant="outline" disabled={isAdvancing}>Next Phase</Button>}
+            {retro && <PhaseControls retro={retro} isModerator={!!isOwner} nextVariant="outline" />}
           </div>
         </div>
 
