@@ -366,29 +366,11 @@ export async function transferModerator(retroId: string, newUserId: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const { data: retro } = await supabase
-    .from("retros")
-    .select("*")
-    .eq("id", retroId)
-    .single();
-
-  if (!retro) return { error: "Retro not found" };
-
-  const currentModerator = retro.moderator_id ?? retro.created_by;
-  if (currentModerator !== user.id) return { error: "Not authorized" };
-
-  const { data: participant } = await supabase
-    .from("retro_participants")
-    .select("id")
-    .eq("retro_id", retroId)
-    .eq("user_id", newUserId)
-    .single();
-  if (!participant) return { error: "User is not a retro participant" };
-
-  const { error } = await supabase
-    .from("retros")
-    .update({ moderator_id: newUserId })
-    .eq("id", retroId);
+  // moderator_id can only change through this RPC (migration 058).
+  const { error } = await supabase.rpc("transfer_moderator", {
+    p_retro_id: retroId,
+    p_new_user_id: newUserId,
+  });
 
   if (error) return { error: error.message };
   return { success: true };

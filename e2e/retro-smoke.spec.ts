@@ -574,6 +574,51 @@ test.describe.serial('Retro smoke (3 users)', () => {
     await expect(pages.mod.getByText(ITEMS.drop)).toHaveCount(1)
   })
 
+  test('the moderator role can only be claimed once the moderator is gone', async () => {
+    test.setTimeout(300_000)
+    await createRetro(pages.mod, `E2E Smoke Retro C ${RUN}`)
+    const retroC = retroIdOf(pages.mod)
+    await joinRetro(pages.u2, retroC)
+    await joinRetro(pages.u3, retroC)
+    await expect(sidebar(pages.mod).getByText('Online', { exact: true })).toHaveCount(3, { timeout: 15000 })
+    const moderatorOf = async () => {
+      const { data } = await clients.mod.from('retros').select('moderator_id, created_by').eq('id', retroC).single()
+      return data!.moderator_id ?? data!.created_by
+    }
+
+    // A new retro has no moderator_id yet, which must not let anyone take over.
+    const claim = await clients.u2.rpc('claim_moderator', { p_retro_id: retroC })
+    expect(claim.error?.message).toBe('A moderator is already active')
+    // Nor may the role be written directly.
+    const forged = await clients.u2.from('retros').update({ moderator_id: userIds.u2 }).eq('id', retroC).select()
+    expect(forged.error?.code).toBe('42501')
+    expect(await moderatorOf()).toBe(userIds.mod)
+
+    // Closing the page hands over within seconds, without waiting for the heartbeat to expire.
+    await pages.mod.goto('/dashboard')
+    await expect.poll(moderatorOf, { timeout: 30000 }).toBe(userIds.u2)
+    await expect(pages.u2.getByRole('button', { name: 'Start Retro' })).toBeVisible({ timeout: 10000 })
+
+    // A moderator who took the role over hands it on the same way.
+    await pages.u2.goto('/dashboard')
+    await expect.poll(moderatorOf, { timeout: 30000 }).toBe(userIds.u3)
+
+    // A crash sends no close signal: the claim is refused until the heartbeat expires, then retried.
+    await joinRetro(pages.mod, retroC)
+    await expect(sidebar(pages.u3).getByText('Online', { exact: true })).toHaveCount(2, { timeout: 15000 })
+    const cdp = await pages.u3.context().newCDPSession(pages.u3)
+    const crashed = pages.u3.waitForEvent('crash')
+    // A crashed page never answers, so this call must not be awaited.
+    void cdp.send('Page.crash').catch(() => {})
+    await crashed
+    const crashedAt = Date.now()
+    await sleep(30000)
+    expect(await moderatorOf()).toBe(userIds.u3)
+    await expect.poll(moderatorOf, { timeout: 150000, intervals: [5000] }).toBe(userIds.mod)
+    console.warn(`[smoke] handover after crash took ${Math.round((Date.now() - crashedAt) / 1000)}s`)
+    await expect(pages.mod.getByRole('button', { name: 'Start Retro' })).toBeVisible({ timeout: 10000 })
+  })
+
   test('no uncaught page errors during the session', async () => {
     expect(pageErrors).toEqual([])
   })

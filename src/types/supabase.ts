@@ -382,6 +382,18 @@ export interface Database {
         Args: { p_retro_id: string };
         Returns: undefined;
       };
+      transfer_moderator: {
+        Args: { p_retro_id: string; p_new_user_id: string };
+        Returns: undefined;
+      };
+      touch_participant: {
+        Args: { p_retro_id: string };
+        Returns: undefined;
+      };
+      mark_participant_away: {
+        Args: { p_retro_id: string };
+        Returns: undefined;
+      };
       dissolve_group_if_empty: {
         Args: { p_group_id: string };
         Returns: undefined;
